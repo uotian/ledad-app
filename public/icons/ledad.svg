@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <clipPath id="tile"><rect width="1024" height="1024" rx="210"/></clipPath>
+    <mask id="mouth">
+      <rect width="1024" height="1024" fill="white"/>
+      <path d="M200 580 1224 -444V1604Z" fill="black"/>
+    </mask>
+  </defs>
+  <g clip-path="url(#tile)">
+    <path fill="#F1E5CF" d="M0 0H1024V1024H0Z"/>
+    <g transform="translate(0 50)">
+    <circle cx="220" cy="580" r="350" fill="#244A91" mask="url(#mouth)"/>
+    <circle cx="165" cy="410" r="60" fill="#F1E5CF"/>
+    <!-- Both arms run at 45 degrees; their dot product is zero. -->
+    <path fill="#DA4433" d="M320 580 1320 -420 1545 -195 770 580 1545 1355 1320 1580Z"/>
+    </g>
+  </g>
+</svg>

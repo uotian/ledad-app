@@ -1,0 +1,208 @@
+.dialog:global(.settings-dialog) {
+  width: min(1200px, calc(100vw - 40px));
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  white-space: normal;
+  font-variant-numeric: tabular-nums;
+}
+.description {
+  color: var(--muted);
+  margin: 12px 0 20px;
+  font-size: 12px;
+}
+.scroll {
+  min-height: 0;
+  overflow: auto;
+  max-height: 65dvh;
+}
+.filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0 18px;
+  font-size: 12px;
+}
+.scroll table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+  text-align: left;
+}
+.scroll th,
+.scroll td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.scroll th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  color: var(--muted);
+  font-weight: 500;
+}
+.scroll small {
+  display: block;
+  color: var(--muted);
+  margin-top: 2px;
+  font-size: 10px;
+}
+.metrics {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  gap: 2px 8px;
+  margin: 0;
+}
+.dateTime {
+  display: grid;
+  gap: 2px;
+}
+.metrics dt {
+  color: var(--muted);
+  font-size: 10px;
+}
+.metrics dd {
+  margin: 0;
+  text-align: right;
+}
+.scroll [data-status='failed'] {
+  color: var(--danger);
+}
+.scroll [data-status='running'] {
+  color: light-dark(#1d4ed8, #93c5fd);
+}
+.scroll [data-status='completed'] {
+  color: var(--success);
+}
+.scroll [data-status='cancelled'] {
+  color: light-dark(#856000, #fde047);
+}
+.scroll .details {
+  min-width: 100px;
+  max-width: 360px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.heading {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.heading > button {
+  margin-left: auto;
+}
+.providers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.heading,
+.filter,
+.footer {
+  flex-shrink: 0;
+}
+.footer {
+  margin-top: 18px;
+}
+.billing {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+  font-size: 12px;
+}
+.billing:focus-visible {
+  outline: none;
+  background: var(--accent-soft);
+}
+
+.detailDialog:global(.settings-dialog) {
+  width: min(1000px, calc(100vw - 40px));
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+}
+.detailTabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+}
+.detailTabs button {
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.detailTabs button[aria-selected='true'] {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+.jsonPanel {
+  overflow: auto;
+  min-height: 160px;
+  flex: 1;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--surface-tint);
+}
+.jsonPanel pre {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font:
+    12px/1.7 ui-monospace,
+    monospace;
+  tab-size: 2;
+}
+.jsonPanel h3 {
+  margin: 16px 0 8px;
+}
+.textBlock + .textBlock {
+  margin-top: 24px;
+}
+.textBlock h3 {
+  margin-top: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+.textBlock pre {
+  font: inherit;
+  white-space: pre-wrap;
+}
+.rawJson {
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.rawJson summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+}
+.rawJson pre {
+  margin-top: 12px;
+}
+
+@media (max-width: 600px) {
+  .heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .providers {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .heading > button {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}

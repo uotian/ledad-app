@@ -1,0 +1,89 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: 16px 18px;
+}
+.panel h2 {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  font-size: calc(13px * var(--text-scale, 1));
+  font-weight: 600;
+}
+.count {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+.mentionList {
+  overflow-y: auto;
+  min-height: 0;
+}
+.mention {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+.mention:last-child {
+  margin-bottom: 0;
+}
+.mentionHeading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+.mentionHeading time,
+.unknownTime {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+  text-align: right;
+}
+.mentionHeading [data-kind='mention'] {
+  color: light-dark(#1d4ed8, #93c5fd);
+}
+.mentionHeading [data-kind='question'] {
+  color: light-dark(#856000, #fde047);
+}
+.mentionHeading [data-kind='request'] {
+  color: light-dark(#be185d, #f9a8d4);
+}
+.mention blockquote {
+  font-size: calc(11px * var(--text-scale, 1));
+  line-height: 1.65;
+  color: var(--muted);
+  margin: 8px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--line-strong);
+  white-space: pre-wrap;
+}
+
+.mention p {
+  font-size: calc(13px * var(--text-scale, 1));
+  line-height: 1.75;
+  margin: 0;
+  white-space: pre-wrap;
+}
+.empty {
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: calc(12px * var(--text-scale, 1));
+  margin: 0;
+}
+
+.error {
+  font-size: 11px;
+  color: var(--danger);
+  margin: 0 0 12px;
+}

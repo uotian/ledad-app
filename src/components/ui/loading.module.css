@@ -1,0 +1,21 @@
+.loading {
+  margin: auto;
+  padding: 24px 32px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  outline: none;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.loading::backdrop {
+  background: rgb(0 0 0 / 55%);
+}
+
+.loading > div {
+  /* 操作要素ではない待機表示への自動フォーカスでは、輪郭線を描きません。 */
+  outline: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

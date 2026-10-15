@@ -1,0 +1,30 @@
+node_modules/
+.next/
+.env*
+env.local
+!.env.example
+.data/
+playwright-report/
+test-results/
+artifacts/
+*.tsbuildinfo
+.DS_Store
+out/
+/build/
+src-tauri/target/
+src-tauri/resources/
+src-tauri/gen/
+
+# Python service
+.tools/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+/backend/dist/
+/backend/build/
+
+# Local UI verification artifacts
+.playwright-cli/
+/output/

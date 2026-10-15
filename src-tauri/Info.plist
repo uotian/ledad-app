@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>NSMicrophoneUsageDescription</key><string>会議の音声を文字に起こし、発表や質問を支援するためにマイクを使用します。</string>
+<key>NSAudioCaptureUsageDescription</key><string>オンライン会議の音声を文字に起こすためにシステム音声を取得します。</string>
+<key>NSScreenCaptureUsageDescription</key><string>オンライン会議の音声を取得します。画面の映像は保存・送信しません。</string>
+</dict></plist>

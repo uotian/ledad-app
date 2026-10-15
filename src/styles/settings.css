@@ -1,0 +1,186 @@
+.settings-dialog {
+  font-size: calc(14px * var(--text-scale, 1));
+  width: min(480px, calc(100vw - 40px));
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 28px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-dialog);
+}
+.settings-dialog:has(> .settings-tabs) {
+  width: min(560px, calc(100vw - 40px));
+}
+.settings-dialog::backdrop {
+  background: var(--backdrop);
+  backdrop-filter: blur(3px);
+}
+.settings-dialog h2 {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+.settings-dialog .section-heading > .icon-button:focus-visible {
+  outline: none;
+  background: var(--accent-soft);
+}
+.settings-description {
+  font-size: calc(11px * var(--text-scale, 1));
+  color: var(--muted);
+  margin-bottom: 23px;
+}
+.settings-dialog .field {
+  position: relative;
+  margin-bottom: 18px;
+}
+.settings-general {
+  display: grid;
+  gap: 24px;
+  padding-top: 22px;
+}
+.settings-general .field,
+.settings-general .appearance-settings,
+.settings-general .field-help,
+.settings-general .theme-options {
+  margin: 0;
+}
+.settings-general .appearance-settings .field-help {
+  margin-top: 10px;
+}
+.settings-key-status {
+  position: absolute;
+  right: 0;
+  top: 0;
+  color: var(--muted);
+  font-size: calc(9px * var(--text-scale, 1));
+}
+.settings-models {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-tint);
+  padding: 14px;
+}
+.settings-models > strong {
+  font-size: calc(10px * var(--text-scale, 1));
+  color: var(--muted);
+  font-weight: 500;
+}
+.settings-models dl {
+  display: grid;
+  align-items: center;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 7px 14px;
+  font-size: calc(10px * var(--text-scale, 1));
+  margin: 10px 0 0;
+}
+.settings-models dt {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.settings-models dd {
+  margin: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.settings-models select {
+  font: inherit;
+  min-height: 32px;
+  padding: 5px 8px;
+}
+.settings-models dd .field-help {
+  margin: 4px 0 0;
+}
+.settings-dialog > .button {
+  margin-top: 20px;
+}
+.connection-button {
+  cursor: pointer;
+}
+.button-danger,
+.error-banner {
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+.settings-button {
+  width: 100%;
+  color: var(--muted);
+  border: 0;
+  background: none;
+  margin: 0;
+  text-align: left;
+}
+.settings-dialog {
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+}
+.appearance-settings {
+  border: 0;
+  padding: 0;
+  margin: 26px 0;
+}
+.appearance-settings legend,
+.settings-section-title {
+  font-size: calc(13px * var(--text-scale, 1));
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin: 5px 0 10px;
+}
+.theme-option {
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 56px;
+  gap: 6px;
+  padding: 8px 6px;
+  font-size: calc(11px * var(--text-scale, 1));
+  line-height: 1.4;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.theme-option.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+.theme-option:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.theme-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.settings-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  border-bottom: 1px solid var(--line);
+}
+.settings-tabs button {
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 10px 14px;
+  font-size: calc(12px * var(--text-scale, 1));
+  border-bottom: 2px solid transparent;
+}
+.settings-tabs button[aria-selected='true'] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+.settings-tabs + .settings-section-title,
+.settings-tabs + .field {
+  margin-top: 22px;
+}
