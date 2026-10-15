@@ -1,0 +1,5 @@
+{
+  "identifier": "main",
+  "windows": ["main"],
+  "permissions": ["core:default", "core:window:allow-set-theme", "core:window:allow-set-background-color", "dialog:allow-save", "fs:allow-write-text-file"]
+}

@@ -1,0 +1,41 @@
+:root {
+  /* ニュートラル色はstone系。操作・選択の差し色は塔のロゴと同じ茶色系。 */
+  --input-bg: #dedbd8;
+  --input-text: #1c1917;
+  --input-placeholder: #57534e;
+  --input-border: #e7e5e4;
+  --on-accent: #ffffff;
+  --radius: 16px;
+  color-scheme: dark;
+  --bg: #0c0a09;
+  --surface: #1c1917;
+  --surface-tint: #292524;
+  --surface-overlay: #1c1917f2;
+  --ink: #fafaf9;
+  --text: #e7e5e4;
+  --muted: #a8a29e;
+  --line: #44403c;
+  --line-strong: #a8a29e;
+  --accent: #c79a70;
+  --brand: #c79a70;
+  --chat-user-bg: #090807;
+  --chat-user-text: #f5f5f4;
+  --accent-solid: #8b5e3c;
+  --accent-hover: #996c47;
+  --accent-soft: #392b21;
+  --focus-ring: #c79a7040;
+  --selection-bg: #65472f;
+  --selection-text: #ffffff;
+  --success: #80c79c;
+  --danger: #ffb4ac;
+  --danger-bg: #412628;
+  --shadow: 0 3px 18px #0002;
+  --shadow-hover: 0 8px 22px #0003;
+  --shadow-dialog: 0 20px 70px #0006;
+  --backdrop: #00000066;
+}
+
+.button-danger:hover:not(:disabled) {
+  background: var(--danger-bg);
+  filter: brightness(0.95);
+}

@@ -1,0 +1,51 @@
+{
+  "name": "ledad",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:ui": "next dev --hostname 127.0.0.1 --port 3000",
+    "build": "next build",
+    "lint": "eslint .",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "app:dev": "npm run service:prepare && PATH=$HOME/.cargo/bin:$PATH tauri dev",
+    "app:build": "PATH=$HOME/.cargo/bin:$PATH tauri build && node scripts/sign-macos.mjs",
+    "desktop:prepare": "node scripts/prepare-desktop.mjs && next build",
+    "service:prepare": "node scripts/prepare-desktop.mjs",
+    "service:dev": "node scripts/python.mjs -m ledad --http",
+    "test:python": "node scripts/python.mjs -m pytest backend/tests",
+    "lint:python": "node scripts/python.mjs -m ruff check backend",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e:real-api": "LEDAD_E2E_REAL_API=1 playwright test",
+    "test:python:coverage": "node scripts/python.mjs -m pytest backend/tests --cov --cov-config=backend/pyproject.toml --cov-report=term-missing --cov-report=xml:artifacts/coverage/python.xml --cov-report=html:artifacts/coverage/python"
+  },
+  "dependencies": {
+    "@google/genai": "^2.26.0",
+    "@tauri-apps/api": "^2.12.1",
+    "@tauri-apps/plugin-dialog": "^2.8.1",
+    "@tauri-apps/plugin-fs": "^2.6.0",
+    "lucide-react": "^1.49.0",
+    "next": "^16.3.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@tauri-apps/cli": "^2.12.1",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitest/coverage-v8": "5.0.3",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.8",
+    "prettier": "^3.9.9",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "vitest": "5.0.3"
+  }
+}

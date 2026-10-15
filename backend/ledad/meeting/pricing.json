@@ -1,0 +1,82 @@
+{
+  "version": "2026-10-08-openai-transcription",
+  "capturedAt": "2026-10-08T00:00:00.000Z",
+  "checkedOn": "2026-10-05",
+  "usdToJpy": 157.58,
+  "exchangeRateDate": "2026-10-02",
+  "exchangeRateSource": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx261002.pdf",
+  "rates": [
+    {
+      "provider": "openai",
+      "model": "gpt-transcribe",
+      "inputUsdPerMillion": 0,
+      "cachedInputUsdPerMillion": 0,
+      "outputUsdPerMillion": 0,
+      "audioInputUsdPerMinute": 0.0045,
+      "source": "https://developers.openai.com/api/docs/pricing#transcription-and-speech"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-6.1-sol",
+      "inputUsdPerMillion": 2,
+      "cachedInputUsdPerMillion": 0.1,
+      "cacheWriteUsdPerMillion": 2.5,
+      "outputUsdPerMillion": 10,
+      "longContext": {
+        "threshold": 272000,
+        "inputMultiplier": 2,
+        "outputMultiplier": 1.5
+      },
+      "source": "https://developers.openai.com/api/docs/models/gpt-6.1-sol"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "inputUsdPerMillion": 0.1,
+      "cachedInputUsdPerMillion": 0.01,
+      "cacheWriteUsdPerMillion": 0.125,
+      "outputUsdPerMillion": 0.5,
+      "longContext": {
+        "threshold": 272000,
+        "inputMultiplier": 2,
+        "outputMultiplier": 1.5
+      },
+      "source": "https://developers.openai.com/api/docs/models/gpt-6-luna"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.4-mini",
+      "inputUsdPerMillion": 0.75,
+      "cachedInputUsdPerMillion": 0.075,
+      "outputUsdPerMillion": 4.5,
+      "source": "https://developers.openai.com/api/docs/models/gpt-5.4-mini"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-3.5-transcribe-live",
+      "inputUsdPerMillion": 3.5,
+      "cachedInputUsdPerMillion": 3.5,
+      "outputUsdPerMillion": 21,
+      "audioTokensPerSecond": 25,
+      "estimatedOutputTokensPerMinute": 175,
+      "source": "https://ai.google.dev/gemini-api/docs/pricing#gemini-3.5-transcribe-live"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-3.5-transcribe",
+      "inputUsdPerMillion": 2,
+      "cachedInputUsdPerMillion": 2,
+      "outputUsdPerMillion": 12,
+      "source": "https://ai.google.dev/gemini-api/docs/pricing#gemini-3.5-transcribe"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-3.8-flash-lite-tts",
+      "inputUsdPerMillion": 0.5,
+      "cachedInputUsdPerMillion": 0.125,
+      "outputUsdPerMillion": 6,
+      "audioTokensPerSecond": 25,
+      "source": "https://ai.google.dev/gemini-api/docs/pricing#gemini-3.8-flash-lite-tts"
+    }
+  ]
+}

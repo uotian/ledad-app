@@ -1,0 +1,6 @@
+.progress {
+  color: #e9c46a;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

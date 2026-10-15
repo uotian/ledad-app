@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+src-tauri/target
+src-tauri/resources
+src-tauri/icons
+public/pdf.worker.min.mjs
+artifacts
+.data
+docs/notes/20261002_アイディア1.md
+env.local
+.env.local
