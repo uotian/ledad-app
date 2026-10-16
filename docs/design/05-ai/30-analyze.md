@@ -2,7 +2,7 @@
 
 [AI Overview](00-overview.md) / [AIサポート](../02-frontend/03-meeting/02.02-ai-support.md)
 
-会話に応じてTopics・@You・Chat/Askの入力候補をまとめて生成します。
+会話に応じてTopics・@You・Chat/Askの入力候補と、[認識用の用語](28-glossary.md)をまとめて生成します。
 
 ## 基本情報
 

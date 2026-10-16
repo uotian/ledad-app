@@ -2,6 +2,15 @@
 
 [English](CHANGELOG.md) | [日本語](CHANGELOG.ja.md)
 
+## v0.9.0 — 2026-10-17
+
+- Added a header glossary with a term count and a single source for each term: your registered names, documents, or conversation analysis, in that priority order.
+- Combined registered names, document terms, and grounded terms from settled conversation into up to 100 speech-recognition hints. Conversation analysis selects existing and new terms for the remaining slots, balancing recognition difficulty and recent use.
+- Changed OpenAI and Gemini Live connection renewal from nine to three minutes so updated vocabulary is applied more frequently.
+- Refined card, form, and modal borders, selected-tab backgrounds, sidebar icons, settings buttons, and the loading indicator. Live and Fixed timestamps now use a subdued bold style.
+
+The bundled app uses Apple Development signing; the Apple Silicon DMG itself is unsigned and not notarized, so macOS may block the app from opening. See the [installation instructions](README.md#setup). Term-selection quality and repeated three-minute renewal with physical audio and external providers were not validated for this release.
+
 ## v0.8.1 — 2026-10-17
 
 - Introduced a mocha light palette and a dark brown palette, with light, dark, and system appearance settings that are remembered across launches.

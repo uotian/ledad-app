@@ -10,6 +10,19 @@ export type Conversation = {
   endTimestamp?: string;
 }[];
 export const analyzeSchema = z.object({
+  glossary: z
+    .array(
+      z.object({
+        term: z
+          .string()
+          .min(1)
+          .max(50)
+          .regex(/^[^<>\r\n]+$/u),
+        evidenceId: z.string(),
+      }),
+    )
+    .max(100)
+    .default([]),
   startedAt: z.iso.datetime().nullable().optional(),
   context: z
     .object({
@@ -58,7 +71,10 @@ export function previousAnalyze(session: Session): Analyze | null {
   const legacy = session.mentionAnalysis;
   if (!legacy) return session.analyze ?? null;
   return {
-    topics: [], suggestedQuestions: [], suggestedMeetingQuestions: [],
+    glossary: [],
+    topics: [],
+    suggestedQuestions: [],
+    suggestedMeetingQuestions: [],
     ...session.analyze,
     ...legacy,
     context: null,
@@ -125,9 +141,10 @@ export async function analyzeKey(
   profileKey: string,
   language: string,
   documents: ReturnType<typeof documentsFor> = '',
+  reservedTerms: string[] = [],
 ) {
   const bytes = new TextEncoder().encode(
-    JSON.stringify({ version: 17, conversation, profileKey, language, documents }),
+    JSON.stringify({ version: 19, conversation, profileKey, language, documents, reservedTerms }),
   );
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');

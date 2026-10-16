@@ -73,11 +73,12 @@ test('AnalyzeでTopicsとYouを一括更新し、失敗は再試行して古いL
         inputKey: createHash('sha256')
           .update(
             JSON.stringify({
-              version: 17,
+              version: 19,
               conversation: body.conversation,
               profileKey,
               language: body.language,
               documents: '',
+              reservedTerms: body.profile.name.split(/[\s,、]+/u).filter(Boolean),
             }),
           )
           .digest('hex'),

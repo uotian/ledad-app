@@ -210,7 +210,13 @@ class AnalyzeContext(Model):
     source_key: str
 
 
+class ConversationTerm(Model):
+    term: str = Field(min_length=1, max_length=50, pattern=r"^[^<>\r\n]+$")
+    evidence_id: str
+
+
 class Analyze(AnalyzeOutput):
+    glossary: list[ConversationTerm] = Field(default_factory=list, max_length=100)
     started_at: str | None = None
     context: AnalyzeContext | None = None
     topic_evidence: dict[str, str] = Field(default_factory=dict)

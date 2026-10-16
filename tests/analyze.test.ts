@@ -87,6 +87,7 @@ it('言及の時刻はFix統合後も元の発言IDから引き、参照不明�
 });
 
 const result = () => ({
+  glossary: [],
   suggestedQuestions: ['導入前の確認点は？'],
   suggestedMeetingQuestions: ['費用はいつ確定しますか？'],
   topics: [
@@ -276,4 +277,10 @@ it('引き継ぎ要約・分析開始時刻・過去の話題の根拠IDを保�
     mentionSources: { [conversation[0].id]: 'source-hash' },
   };
   expect(sessionSchema.parse(JSON.parse(JSON.stringify(session))).analyze).toEqual(session.analyze);
+});
+
+it('確保済み用語の変更で入力キーを更新し、選別結果だけでは更新しない', async () => {
+  const key = await analyzeKey(conversation, '{}', 'ja', '同じ要約', ['Owner', 'Ledad']);
+  expect(await analyzeKey(conversation, '{}', 'ja', '同じ要約', ['Owner', 'NewTerm'])).not.toBe(key);
+  expect(await analyzeKey(conversation, '{}', 'ja', '同じ要約', ['Owner', 'Ledad'])).toBe(key);
 });

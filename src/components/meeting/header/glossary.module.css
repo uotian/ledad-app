@@ -1,0 +1,19 @@
+.terms {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: calc(12px * var(--text-scale, 1));
+  text-align: left;
+}
+.terms th,
+.terms td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--card-border);
+  overflow-wrap: anywhere;
+}
+.terms th {
+  color: var(--muted);
+  font-weight: 500;
+}
+.terms td:last-child {
+  color: var(--muted);
+}

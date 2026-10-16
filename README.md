@@ -20,6 +20,7 @@ Next.js handles the interface and real-time audio streaming, while Python manage
 - Context-aware AI consultation (Chat) and speaking drafts (Ask)
 - Read reviewed drafts aloud, with pause and resume
 - Generate reference text and a glossary from PDF, PowerPoint, images, and text documents
+- View glossary sources and use up to 100 terms from registered names, documents, and conversation analysis as speech-recognition hints (except Apple Live)
 - Save meeting records and summaries, and export meeting minutes as Markdown
 - Interface and speech in Japanese, English, Simplified Chinese, and French
 - Light, dark, and system appearance modes, with a mocha color palette
@@ -32,7 +33,9 @@ Next.js handles the interface and real-time audio streaming, while Python manage
 
 ## Setup
 
-Download the Apple Silicon DMG from [Releases](https://github.com/uotian/ledad-app/releases/latest), open it, and copy `ledad.app` to Applications. The current DMG uses Apple Development signing and is not notarized; macOS may block it from opening.
+Download the Apple Silicon DMG from [Releases](https://github.com/uotian/ledad-app/releases/latest), open it, and copy `ledad.app` to Applications. The bundled app is signed with Apple Development; the DMG itself is unsigned and not notarized, so macOS may block the app from opening.
+
+If macOS blocks this trusted download, dismiss the alert and open **System Settings → Privacy & Security → Open Anyway**. See [Apple's instructions](https://support.apple.com/en-us/102445).
 
 To build locally from source, follow the steps below.
 

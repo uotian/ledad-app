@@ -21,7 +21,7 @@
 | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `input`                                                    | `[{type: audio, data: Base64 WAV, mime_type: audio/wav}]`                                                                         |
 | `generation_config.transcription_config.language_codes`    | [会議設定](../02-frontend/02-home/02-meeting-setting.md#基本設定)の「会議の言語」を`ja-JP / en-US / cmn-Hans-CN`の1要素配列へ変換 |
-| `generation_config.transcription_config.custom_vocabulary` | [Document](10-document.md)の`glossary`。空なら省略                                                                                |
+| `generation_config.transcription_config.custom_vocabulary` | [認識用の用語集](28-glossary.md)。空なら省略                                                                                |
 
 ## 出力
 

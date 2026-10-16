@@ -17,23 +17,40 @@ def documents_for(session: Session):
     return session.document_reference.summary if reference_is_available(session) else ""
 
 
-def glossary_for(session: Session):
-    if not reference_is_available(session):
-        return []
+def glossary_entries(session: Session, names=()):
     entries, seen = [], set()
-    for term in session.document_reference.glossary:
-        key = term.strip().casefold()
-        if not key or key in seen or len(term) > 50:
-            continue
-        seen.add(key)
-        entries.append(term)
-        if len(entries) == 100:
-            break
+    sources = [("profile", names)]
+    if reference_is_available(session):
+        sources.append(("document", session.document_reference.glossary))
+    conversation = {
+        t.id: t.text for t in session.transcripts if t.corrected_at or t.source == "manual"
+    } | {
+        u.id: u.completed_text for u in session.utterances if u.status != "playing"
+    }
+    if session.analyze:
+        sources.append(("analyze", [
+            entry.term for entry in session.analyze.glossary
+            if entry.term in conversation.get(entry.evidence_id, "")
+        ]))
+    for source, terms in sources:
+        for term in terms:
+            term = term.strip()
+            key = term.lower()
+            if not key or key in seen or len(term) > 50 or any(c in term for c in "<>\r\n"):
+                continue
+            seen.add(key)
+            entries.append({"term": term, "source": source})
+            if len(entries) == 100:
+                return entries
     return entries
 
 
-def vocabulary_for(session: Session):
-    return glossary_for(session)
+def glossary_for(session: Session):
+    return [entry["term"] for entry in glossary_entries(session)]
+
+
+def vocabulary_for(session: Session, names=()):
+    return [entry["term"] for entry in glossary_entries(session, names)]
 
 
 def meeting_evidence(session: Session):

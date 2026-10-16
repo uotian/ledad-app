@@ -19,7 +19,7 @@
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `file`      | `recording.wav`、16kHz・モノラル・16bit WAV、`audio/wav`                                                                              |
 | `languages` | [会議設定](../02-frontend/02-home/02-meeting-setting.md#基本設定)の「会議の言語」。`ja / en / zh / fr`の1要素配列をSDKの`extra_body`で指定 |
-| `keywords`  | [Document](10-document.md)の`glossary`。送信前に`<`・`>`・CR・LFを含む語を除外し、空なら省略。`extra_body`で指定                      |
+| `keywords`  | [認識用の用語集](28-glossary.md)。送信前に`<`・`>`・CR・LFを含む語を除外し、空なら省略。`extra_body`で指定                      |
 
 ## 出力
 

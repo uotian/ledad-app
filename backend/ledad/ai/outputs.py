@@ -2,7 +2,7 @@ from typing import Annotated
 
 from pydantic import Field
 
-from ..meeting.models import CandidateDraft, Mention, Model, Topic
+from ..meeting.models import CandidateDraft, ConversationTerm, Mention, Model, Topic
 
 
 class AnalyzedTopic(Topic):
@@ -10,6 +10,7 @@ class AnalyzedTopic(Topic):
 
 
 class Analysis(Model):
+    glossary: list[ConversationTerm] = Field(max_length=100)
     suggested_questions: list[str]
     suggested_meeting_questions: list[str]
     topic_updates: list[AnalyzedTopic]

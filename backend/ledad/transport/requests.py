@@ -49,6 +49,9 @@ class Profile(Model):
     name: Annotated[str, StringConstraints(strip_whitespace=True, max_length=601)] = ""
     aliases: Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)] = ""
 
+    def terms(self):
+        return list(dict.fromkeys(filter(None, re.split(r"[\s,、]+", f"{self.name} {self.aliases}"))))
+
     def names(self):
         names = []
         for name in re.split(r"[,、\n]", ",".join([self.name, self.aliases])):
@@ -60,6 +63,7 @@ class Profile(Model):
 class LiveToken(Model):
     session_id: Id
     provider: Literal["gemini", "openai"] | None = None
+    profile: Profile = Field(default_factory=Profile)
 
 
 class Speech(Model):
@@ -121,6 +125,7 @@ class AnalyzeRequest(Model):
 
 
 class Refinement(Model):
+    profile: Profile = Field(default_factory=Profile)
     pcm: str = Field(min_length=4, max_length=8_106_668, pattern=r"^[A-Za-z0-9+/]*={0,2}$")
     transcript_ids: list[Id] = Field(min_length=1, max_length=300)
     translation_language: Language

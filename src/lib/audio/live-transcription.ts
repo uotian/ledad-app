@@ -1,3 +1,4 @@
+import { readProfile } from '@/components/settings/profile/profile';
 import {
   GoogleGenAI,
   type LiveConnectConfig,
@@ -7,7 +8,7 @@ import {
 import { api } from '@/lib/api';
 import { LiveUsage } from './live-usage';
 
-const renewalMs = 9 * 60_000;
+const renewalMs = 3 * 60_000;
 const maxSpeechBytes = 15 * 32_000;
 const connectTimeoutMs = 15_000;
 const drainMs = 1500;
@@ -89,10 +90,7 @@ export class LiveTranscription {
     const deadline = new Promise<never>((_resolve, reject) => {
       cancel = () => reject(new DOMException('取消', 'AbortError'));
       timer = setTimeout(
-        () =>
-          reject(
-            new Error('Gemini / LiveSTTの接続：聞き取りの接続がタイムアウトしました。'),
-          ),
+        () => reject(new Error('Gemini / LiveSTTの接続：聞き取りの接続がタイムアウトしました。')),
         milliseconds,
       );
       this.abort.signal.addEventListener('abort', cancel, { once: true });
@@ -128,7 +126,11 @@ export class LiveTranscription {
           usageId: string;
         }>('/api/live-token', {
           method: 'POST',
-          body: JSON.stringify({ sessionId: this.sessionId, provider: 'gemini' }),
+          body: JSON.stringify({
+            sessionId: this.sessionId,
+            profile: readProfile(),
+            provider: 'gemini',
+          }),
           signal: tokenAbort.signal,
         }),
         connectTimeoutMs,

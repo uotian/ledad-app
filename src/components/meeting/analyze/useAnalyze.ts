@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { SessionStore } from '@/hooks/useSessionStore';
 import type { Language } from '@/lib/session/schema';
 import { documentsFor } from '@/lib/session/policy';
+import { glossaryEntries } from '@/lib/session/glossary';
 import { startAnalyzeSchedule } from './schedule';
 import { api, ApiError } from '@/lib/api';
 import { reportMeetingError } from '@/lib/report-meeting-error';
@@ -45,6 +46,13 @@ export function useAnalyze(store: SessionStore, language: Language) {
   const conversation = store.session ? conversationForAnalyze(store.session) : [];
   const conversationKey = JSON.stringify(conversation);
   const documentsKey = JSON.stringify(documentsFor(store.session));
+  const reservedKey = JSON.stringify(
+    store.session
+      ? glossaryEntries(store.session, profile)
+          .filter((entry) => entry.source !== 'analyze')
+          .map((entry) => entry.term)
+      : [],
+  );
   const cancel = useCallback(() => {
     controller.current?.abort();
     controller.current = null;
@@ -66,6 +74,7 @@ export function useAnalyze(store: SessionStore, language: Language) {
           profileKey,
           language,
           JSON.parse(documentsKey),
+          JSON.parse(reservedKey),
         );
         if (abort.signal.aborted || session.analyze?.inputKey === inputKey) return;
         setPending(true);
@@ -87,11 +96,22 @@ export function useAnalyze(store: SessionStore, language: Language) {
         if (abort.signal.aborted || !alive || latest?.id !== id || latest.status !== 'active')
           return;
         // 会話も結果も自動保存に任せ、解析は保存の完了を待ちません。
-        update((value) => ({
-          ...value,
-          analyze: reconcileMentions(result, conversation, conversationForAnalyze(value)),
-          mentionAnalysis: null,
-        }));
+        update((value) => {
+          const current = conversationForAnalyze(value);
+          const settled = new Map(
+            current.filter((item) => item.settled).map((item) => [item.id, item.text]),
+          );
+          return {
+            ...value,
+            analyze: {
+              ...reconcileMentions(result, conversation, current),
+              glossary: result.glossary.filter((entry) =>
+                settled.get(entry.evidenceId)?.includes(entry.term),
+              ),
+            },
+            mentionAnalysis: null,
+          };
+        });
         return 'sent';
       } catch (error) {
         if (alive && !abort.signal.aborted) {
@@ -120,17 +140,21 @@ export function useAnalyze(store: SessionStore, language: Language) {
       schedule.current = null;
       cancel();
     };
-  }, [active, id, language, profileKey, documentsKey, ref, update, cancel]);
+  }, [active, id, language, profileKey, documentsKey, reservedKey, ref, update, cancel]);
   useEffect(() => {
     intervalRef.current = interval;
     const latestConversation = JSON.parse(conversationKey);
     if (!active || !latestConversation.length) return;
     let cancelled = false;
-    void analyzeKey(latestConversation, profileKey, language, JSON.parse(documentsKey)).then(
-      (key) => {
-        if (!cancelled && ref.current?.analyze?.inputKey !== key) schedule.current?.request();
-      },
-    );
+    void analyzeKey(
+      latestConversation,
+      profileKey,
+      language,
+      JSON.parse(documentsKey),
+      JSON.parse(reservedKey),
+    ).then((key) => {
+      if (!cancelled && ref.current?.analyze?.inputKey !== key) schedule.current?.request();
+    });
     return () => {
       cancelled = true;
     };
@@ -141,6 +165,7 @@ export function useAnalyze(store: SessionStore, language: Language) {
     profileKey,
     conversationKey,
     documentsKey,
+    reservedKey,
     interval,
     ref,
     update,
@@ -151,13 +176,22 @@ export function useAnalyze(store: SessionStore, language: Language) {
     analyze?.language === language && analyze.profileKey === profileKey ? analyze : null;
   const mentionSource = store.session?.mentionAnalysis ?? analyze;
   const matching = mentionSource?.profileKey === profileKey && mentionSource.language === language;
-  const mentions = store.session && matching
-    ? visibleMentions(store.session, mentionSource.mentions).filter((item) =>
-        conversation.some((entry) => entry.id === item.evidenceId && entry.text.includes(item.quote)),
-      )
-    : [];
+  const mentions =
+    store.session && matching
+      ? visibleMentions(store.session, mentionSource.mentions).filter((item) =>
+          conversation.some(
+            (entry) => entry.id === item.evidenceId && entry.text.includes(item.quote),
+          ),
+        )
+      : [];
   return {
-    pending, remainingSeconds, error, profile, suggestions, cancel, mentions,
+    pending,
+    remainingSeconds,
+    error,
+    profile,
+    suggestions,
+    cancel,
+    mentions,
     mentionUpdatedAt: matching ? mentionSource.updatedAt : undefined,
   };
 }

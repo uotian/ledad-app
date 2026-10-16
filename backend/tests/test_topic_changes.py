@@ -20,7 +20,7 @@ def state():
         'mentions': [], 'updatedAt': '2026-10-15T00:04:00Z',
         'profileKey': '{"name":"","aliases":""}', 'language': 'ja', 'inputKey': 'old',
     })
-    delta = dict(topicUpdates=[], topicAdditions=[], topicDeletions=[], mentions=[],
+    delta = dict(glossary=[], topicUpdates=[], topicAdditions=[], topicDeletions=[], mentions=[],
                  suggestedQuestions=[], suggestedMeetingQuestions=[], handoffSummary='')
     return conversation, previous, delta
 

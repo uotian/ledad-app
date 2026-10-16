@@ -43,7 +43,7 @@ describe('@You source revisions', () => {
   it('uses the same input signature as the backend and detects Live to Fix', async () => {
     const conversation: Conversation = [first];
     const expected = createHash('sha256')
-      .update(JSON.stringify({ version: 17, conversation, profileKey: '{}', language: 'ja', documents: '' }))
+      .update(JSON.stringify({ version: 19, conversation, profileKey: '{}', language: 'ja', documents: '', reservedTerms: [] }))
       .digest('hex');
     expect(await analyzeKey(conversation, '{}', 'ja')).toBe(expected);
     expect(await analyzeKey([{ ...first, settled: true }], '{}', 'ja')).not.toBe(expected);
@@ -54,6 +54,7 @@ describe('@You source revisions', () => {
 it('旧独立言及を次のAnalyzeへ読み継ぎ、統合結果を優先する', () => {
   const session = createSession();
   session.analyze = {
+    glossary: [],
     ...result, topics: [{ id: 'topic', title: '話題', summary: '既存' }],
     suggestedQuestions: [], suggestedMeetingQuestions: [], mentions: [],
     context: { coveredCount: 1, summary: '要約', sourceKey: 'old' },

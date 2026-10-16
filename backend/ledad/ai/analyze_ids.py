@@ -46,6 +46,10 @@ class AnalyzeIds:
         return {
             **{key: value for key, value in result.items()
                if key not in ('topicUpdates', 'topicAdditions', 'topicDeletions')},
+            'glossary': [
+                {**entry, 'evidenceId': self.original_evidence.get(entry['evidenceId'], '')}
+                for entry in result.get('glossary', [])
+            ],
             'topics': list(topics.values()),
             'mentions': [
                 {**mention, 'evidenceId': self.original_evidence[mention['evidenceId']]}

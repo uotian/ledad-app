@@ -24,7 +24,7 @@
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `text`           | [Live / Gemini](21-live-gemini.md#出力)・[Live / Apple](22-live-apple.md#出力)の途中原文の全文                           |
 | `targetLanguage` | [会議設定](../02-frontend/02-home/02-meeting-setting.md#基本設定)の「翻訳先の言語」。`日本語 / English / 简体中文`へ変換 |
-| `glossary`       | [Document](10-document.md)の`glossary`                                                                                   |
+| `glossary`       | [用語集](28-glossary.md)のドキュメント・会話分析由来の語                                                                                   |
 | `context`        | 保存済み[Transcript](../06-data/01-schema.md#主な子モデル)の`text`。末尾3件                                              |
 | `previous`       | 直前に表示した原文`text`と[Live Translate](25-live-translate.md#出力)の`translation`。初回はnull                         |
 

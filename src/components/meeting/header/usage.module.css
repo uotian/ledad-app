@@ -141,7 +141,7 @@
 }
 .detailTabs button[aria-selected='true'] {
   color: var(--text);
-  border-bottom-color: var(--accent);
+  background: var(--accent-soft);
 }
 .jsonPanel {
   overflow: auto;

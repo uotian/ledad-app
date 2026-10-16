@@ -218,9 +218,8 @@ class Service:
             if self.config.base_url():
                 raise AppError("カスタム接続先の使用中はLiveにAppleを使用してください。")
             session = self.sessions.read(data.session_id)
-            # 登録名への認識バイアスを避け、プロフィールは言及検出だけに使います。
             provider = self.ai.provider if (data.provider or self.config.live_provider()) == "openai" else self.gemini
-            return Response(await provider.live_token(session, vocabulary_for(session)))
+            return Response(await provider.live_token(session, vocabulary_for(session, data.profile.terms())))
         if path == "/api/speech" and verb == "POST":
             data = body(request, contracts.Speech)
             self.sessions.read(data.session_id)
@@ -511,7 +510,7 @@ class Service:
                 raise AppError("会話の更新状態を確認してください。")
             return Response(
                 await self.refinement.run(
-                    session, pcm, transcripts, data.translation_language, vocabulary_for(session)
+                    session, pcm, transcripts, data.translation_language, vocabulary_for(session, data.profile.terms())
                 )
             )
         raise AppError("操作が見つかりません。", 404)

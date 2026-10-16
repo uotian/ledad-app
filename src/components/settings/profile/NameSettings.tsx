@@ -27,7 +27,7 @@ export default function NameSettings() {
         <input
           maxLength={601}
           value={value.name}
-          placeholder={t('例：内藤義彦、内藤さん、Naito、Yoshihiko')}
+          placeholder={t('例：内藤芳彦 内藤さん Naito Yoshihiko')}
           aria-describedby="profile-help"
           onChange={(e) => setDraft({ ...value, name: e.target.value })}
           onBlur={persist}
@@ -35,7 +35,7 @@ export default function NameSettings() {
       </label>
       <p id="profile-help" className="field-help">
         {t(
-          '名前や呼ばれ方を「、」やスペースで区切って入力してください。言及の検出に使います。設定はこの端末に保存され、言及を解析するときにAIへ送られます。',
+          '名前や呼ばれ方をスペース区切りで入力してください。言及の検出に使います。設定はこの端末に保存され、会話分析や音声認識のときにAIへ送られます。',
         )}
       </p>
       {error && <p role="alert">{t('名前を保存できませんでした。')}</p>}

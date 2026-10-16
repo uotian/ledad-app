@@ -18,3 +18,11 @@ export type Profile = z.infer<typeof profileSchema>;
 export const emptyProfile: Profile = { name: '', aliases: '' };
 export const profileStorageKey = 'ledad.profile.v1';
 export const profileChanged = 'ledad-profile-changed';
+
+export function readProfile(): Profile {
+  try {
+    return profileSchema.parse(JSON.parse(localStorage.getItem(profileStorageKey) || '{}'));
+  } catch {
+    return emptyProfile;
+  }
+}

@@ -158,7 +158,7 @@ it('細かい不均等チャンクでもリサンプリングの位相を保持�
 
 it('接続更新中の音声を新接続へ順序を保って送る', async () => {
   await start();
-  await vi.advanceTimersByTimeAsync(9 * 60_000);
+  await vi.advanceTimersByTimeAsync(3 * 60_000);
   expect(Socket.instances).toHaveLength(2);
   connection.push(speech);
   expect(callbacks.onAudio).not.toHaveBeenCalled();
@@ -173,7 +173,7 @@ it('接続更新中の音声を新接続へ順序を保って送る', async () =
 
 it('更新中に停止しても保持した音声を送って末尾を確定する', async () => {
   await start();
-  await vi.advanceTimersByTimeAsync(9 * 60_000);
+  await vi.advanceTimersByTimeAsync(3 * 60_000);
   connection.push(speech);
   const finish = connection.finish();
   const next = Socket.instances[1];

@@ -25,7 +25,7 @@ Liveで確定した発言・手入力の発言・Fixで再認識した原文の�
 | `text`                | [Live](20-transcribe.md)の確定原文・手入力、または[Fix / OpenAI](23-fix-openai.md#出力)・[Fix / Gemini](24-fix-gemini.md#出力)の原文全体 |
 | `precedingContext`    | 保存済み[Transcript](../06-data/01-schema.md#主な子モデル)の`text`。通常は末尾5件、Fix後は空配列                                         |
 | `translationLanguage` | [会議設定](../02-frontend/02-home/02-meeting-setting.md#基本設定)の「翻訳先の言語」。`日本語 / English / 简体中文`へ変換                 |
-| `glossary`            | [Document](10-document.md)の`glossary`                                                                                                   |
+| `glossary`            | [用語集](28-glossary.md)のドキュメント・会話分析由来の語                                                                                                   |
 
 ### 指示の要点
 

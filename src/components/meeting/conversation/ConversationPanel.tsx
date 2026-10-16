@@ -3,11 +3,9 @@ import { matchesTranscript } from '@/lib/session/refinement';
 import { useI18n } from '@/components/settings/LanguageProvider';
 
 import { useEffect, useRef } from 'react';
-import { AudioLines } from 'lucide-react';
 import type { Session } from '@/lib/session/schema';
 import { formatTranscript, formatTranscriptTime } from '@/lib/session/transcript-display';
 import type { Meeting } from '@/hooks/useMeeting';
-import EmptyState from '@/components/ui/EmptyState';
 import TranscriptItem from './TranscriptItem';
 import TestTranscriptInput from './TestTranscriptInput';
 export default function ConversationPanel({
@@ -34,11 +32,9 @@ export default function ConversationPanel({
         }}
       >
         {!session.transcripts.length && !meeting.interim && (
-          <EmptyState icon={<AudioLines size={28} />} title={t('会話を、ここで受け止めます。')}>
-            {t('聞き取った言葉が順番に表示されます。')}
-            <br />
-            {t('気になる発言から候補を作れます。')}
-          </EmptyState>
+          <div className="empty-state">
+            <p>{t('文字起こしと翻訳がここに表示されます。')}</p>
+          </div>
         )}
         {session.transcripts
           .filter((t) => t.text.trim())

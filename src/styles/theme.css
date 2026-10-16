@@ -3,7 +3,7 @@
   --input-bg: #faf3e9;
   --input-text: #34251d;
   --input-placeholder: #705440;
-  --input-border: #a4866d;
+  --input-border: var(--card-border);
   --on-accent: #ffffff;
   --radius: 16px;
   --live-color: #a43d38;
@@ -21,6 +21,7 @@
   --text: #3d2c22;
   --muted: #493224;
   --line: #bd9b7e;
+  --card-border: #c5bbb1;
   --line-strong: #87664d;
   --accent: #4b3022;
   --brand: #4b3022;
@@ -31,7 +32,7 @@
   --chat-user-text: #34251d;
   --accent-solid: #4b3022;
   --accent-hover: #63412d;
-  --accent-soft: #dfc1a3;
+  --accent-soft: #ead8c5;
   --focus-ring: #4b302240;
   --selection-bg: #4b3022;
   --selection-text: #ffffff;
@@ -64,7 +65,7 @@
 }
 .sidebar .brand:focus-visible,
 .sidebar .nav-item:focus-visible {
-  outline-color: var(--bar-text);
+  background: var(--bar-hover);
 }
 
 .session-controls {
@@ -82,11 +83,12 @@
   --text: #efdfce;
   --muted: #cbb39c;
   --line: #64503f;
+  --card-border: #453c35;
   --line-strong: #9e8166;
   --input-bg: #241c17;
   --input-text: #efdfce;
   --input-placeholder: #cbb39c;
-  --input-border: #9e8166;
+  --input-border: var(--card-border);
   --accent: #deb58d;
   --brand: #deb58d;
   --bar-bg: #140f0c;
@@ -96,7 +98,7 @@
   --chat-user-text: #efdfce;
   --accent-solid: #805334;
   --accent-hover: #8b5b38;
-  --accent-soft: #493426;
+  --accent-soft: #1e1713;
   --focus-ring: #deb58d55;
   --selection-bg: #805334;
   --success: #80c79c;

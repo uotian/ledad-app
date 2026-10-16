@@ -4,8 +4,8 @@ import hashlib
 from datetime import datetime
 from pathlib import Path
 
-from ..meeting.models import Minutes
-from ..meeting.policy import documents_for, glossary_for, meeting_evidence
+from ..meeting.models import ConversationTerm, Minutes
+from ..meeting.policy import documents_for, glossary_entries, glossary_for, meeting_evidence
 from ..storage.files import compact, now_iso
 from .analyze_context import prepare_context, updated_context
 from .analyze_ids import AnalyzeIds
@@ -147,6 +147,18 @@ class MeetingAI:
                     for topic in previous.topics
                 ],
             }
+        reserved_terms = [
+            entry["term"] for entry in glossary_entries(session, body.profile.terms())
+            if entry["source"] != "analyze"
+        ]
+        reserved = {term.lower() for term in reserved_terms}
+        glossary_limit = 100 - len(reserved_terms)
+        settled = {entry["id"]: entry for entry in ordered if entry.get("settled")}
+        previous_glossary = [
+            entry for entry in (previous.glossary if previous else [])
+            if entry.term in settled.get(entry.evidence_id, {}).get("text", "")
+            and entry.term.strip().lower() not in reserved
+        ]
         result = await self.provider.structured(
             Analysis,
             "meeting_analyze",
@@ -161,6 +173,16 @@ class MeetingAI:
                     {key: entry[key] for key in ("id", "text", "timestamp")}
                     for entry in ordered[covered:]
                 ]),
+                "reservedTerms": reserved_terms,
+                "glossaryLimit": glossary_limit,
+                "previousGlossary": [
+                    {"term": entry.term, "evidenceId": ids.evidence[entry.evidence_id],
+                     "timestamp": settled[entry.evidence_id]["timestamp"]}
+                    for entry in previous_glossary
+                ],
+                "glossaryTargetIds": [
+                    ids.evidence[entry["id"]] for entry in ordered[covered:] if entry.get("settled")
+                ],
                 "mentionTargetIds": [ids.evidence[entry["id"]] for entry in targets],
                 "previous": previous_data,
             },
@@ -169,6 +191,22 @@ class MeetingAI:
             "conversation",
         )
         result = ids.restore(result)
+        # 選ばれた語だけを保存し、既存語の自動追加で選別結果を覆しません。
+        glossary, seen = [], set(reserved)
+        fresh_ids = {entry["id"] for entry in ordered[covered:] if entry.get("settled")}
+        previous_pairs = {(entry.term, entry.evidence_id) for entry in previous_glossary}
+        for raw in result["glossary"]:
+            if len(glossary) >= glossary_limit:
+                break
+            entry = ConversationTerm.model_validate(raw)
+            key = entry.term.strip().lower()
+            allowed = entry.evidence_id in fresh_ids or (entry.term, entry.evidence_id) in previous_pairs
+            if (not key or key in seen or not allowed
+                    or entry.term not in settled.get(entry.evidence_id, {}).get("text", "")):
+                continue
+            seen.add(key)
+            glossary.append(entry.wire())
+        result["glossary"] = glossary
         # AIの配列順ではなく、根拠発言の時刻で話題を並べます。
         evidence_order = {
             entry["id"]: index
@@ -186,11 +224,12 @@ class MeetingAI:
             ordered, context, covered, end, result["handoffSummary"]
         )
         payload = {
-            "version": 17,
+            "version": 19,
             "conversation": conversation,
             "profileKey": profile_key,
             "language": body.language,
             "documents": documents,
+            "reservedTerms": reserved_terms,
         }
         return {
             **{key: value for key, value in result.items() if key != "handoffSummary"},

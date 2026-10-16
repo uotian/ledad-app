@@ -84,6 +84,10 @@ async def test_analyze_generates_topics_and_mentions_together(service, mentions)
     assert result["mentions"] == mentions
     data = provider.call_args.args[3]
     assert data == {
+        "reservedTerms": ["内藤", "Naito"],
+        "glossaryLimit": 98,
+        "previousGlossary": [],
+        "glossaryTargetIds": [],
         "mentionTargetIds": ["c1"],
         "handoff": "",
         "summarizeThroughId": None,
@@ -95,11 +99,12 @@ async def test_analyze_generates_topics_and_mentions_together(service, mentions)
     }
     assert result["language"] == "en"
     payload = {
-        "version": 17,
+        "version": 19,
         "conversation": conversation,
         "profileKey": compact(body.profile.wire()),
         "language": "en",
         "documents": "",
+        "reservedTerms": ["内藤", "Naito"],
     }
     assert result["inputKey"] == hashlib.sha256(compact(payload).encode()).hexdigest()
 
@@ -209,3 +214,106 @@ async def test_topics_reject_unknown_evidence_instead_of_guessing_order(service)
     body = AnalyzeRequest.model_validate({"conversation": conversation, "profile": {}, "language": "ja", "previous": None})
     with pytest.raises(ValueError, match="最終発言"):
         await service.ai.analyze(service.sessions.create(), body)
+
+
+async def test_glossary_keeps_only_grounded_settled_terms_and_revalidates_previous(service):
+    conversation, output, _ = inputs()
+    conversation[0].update(text="内藤さんがLedadを導入します。", settled=True)
+    conversation.append({
+        "id": str(uuid4()), "text": "Sakana AIの話", "timestamp": "2026-10-05T00:01:00Z",
+    })
+    generated = provider_output(output, conversation)
+    generated['glossary'] = [
+        {'term': 'Ledad', 'evidenceId': 'c1'},
+        {'term': '内藤さん', 'evidenceId': 'c1'},
+        {'term': 'Sakana AI', 'evidenceId': 'c2'},
+        {'term': '推測した名前', 'evidenceId': 'c1'},
+        {'term': '不明な発言', 'evidenceId': 'c99'},
+    ]
+    service.ai.provider.structured = AsyncMock(return_value=generated)
+    session = service.sessions.create()
+    body = AnalyzeRequest.model_validate({
+        'language': 'ja', 'profile': {}, 'previous': None, 'conversation': conversation,
+    })
+    first = await service.ai.analyze(session, body)
+    assert first['glossary'] == [
+        {'term': 'Ledad', 'evidenceId': conversation[0]['id']},
+        {'term': '内藤さん', 'evidenceId': conversation[0]['id']},
+    ]
+    assert service.ai.provider.structured.call_args.args[3]['glossaryTargetIds'] == ['c1']
+    body.previous = Analyze.model_validate(first)
+    generated['glossary'] = [{'term': entry['term'], 'evidenceId': 'c1'} for entry in first['glossary']]
+    second = await service.ai.analyze(session, body)
+    assert second['glossary'] == first['glossary']
+    body.conversation[0].text = 'Ledadを導入します。'
+    assert (await service.ai.analyze(session, body))['glossary'] == [first['glossary'][0]]
+    body.conversation = body.conversation[1:]
+    generated['topicAdditions'] = []
+    body.previous.topics = []
+    assert (await service.ai.analyze(session, body))['glossary'] == []
+
+
+@pytest.mark.parametrize('slots', [0, 1, 2])
+async def test_glossary_selection_reserves_priority_terms_and_does_not_restore_rejected_terms(service, document, reference, slots):
+    from ledad.ai.analyze_context import source_key
+    from ledad.meeting.models import AnalyzeContext
+
+    conversation, output, previous = inputs()
+    conversation[0].update(text='RareName OtherOld OldUnselected', settled=True)
+    conversation.append({
+        'id': str(uuid4()), 'text': 'Owner Doc0 NewName Overflow',
+        'timestamp': '2026-10-05T00:05:00Z', 'settled': True,
+    })
+    previous.update(
+        profileKey=compact({'name': 'Owner', 'aliases': ''}),
+        glossary=[{'term': term, 'evidenceId': conversation[0]['id']} for term in ['RareName', 'OldUnselected']],
+    )
+    body = AnalyzeRequest.model_validate({
+        'language': 'ja', 'profile': {'name': 'Owner'}, 'conversation': conversation, 'previous': previous,
+    })
+    body.previous.context = AnalyzeContext(
+        summary='既に要約した会話', covered_count=1, source_key=source_key([body.conversation[0].wire()]),
+    )
+    body.previous.mention_sources = {
+        entry.id: hashlib.sha256(compact([entry.text, entry.settled]).encode()).hexdigest()
+        for entry in body.conversation
+    }
+    generated = provider_output(output, conversation, existing=True)
+    generated['glossary'] = [
+        {'term': 'Owner', 'evidenceId': 'c2'},
+        {'term': 'Doc0', 'evidenceId': 'c2'},
+        {'term': 'OtherOld', 'evidenceId': 'c1'},  # 原文が要約済みで既存候補にもない語
+        {'term': 'RareName', 'evidenceId': 'c1'},
+        {'term': 'NewName', 'evidenceId': 'c2'},
+        {'term': 'Overflow', 'evidenceId': 'c2'},
+    ]
+    session = service.sessions.create()
+    session.documents = [document]
+    session.document_reference = reference
+    reference.glossary = ['owner', *[f'Doc{i}' for i in range(99 - slots)]]
+    service.ai.provider.structured = AsyncMock(return_value=generated)
+    result = await service.ai.analyze(session, body)
+    data = service.ai.provider.structured.call_args.args[3]
+    assert data['glossaryLimit'] == slots
+    assert len(data['reservedTerms']) == 100 - slots
+    assert data['reservedTerms'][0] == 'Owner'
+    assert data['glossaryTargetIds'] == ['c2']
+    assert data['previousGlossary'] == [
+        {'term': term, 'evidenceId': 'c1', 'timestamp': conversation[0]['timestamp']}
+        for term in ['RareName', 'OldUnselected']
+    ]
+    assert [entry['term'] for entry in result['glossary']] == ['RareName', 'NewName'][:slots]
+    assert len(service.ai.provider.structured.call_args_list) == 1
+
+
+async def test_glossary_only_change_invalidates_analysis_key(service, document, reference):
+    conversation, output, _ = inputs()
+    session = service.sessions.create()
+    session.documents = [document]
+    session.document_reference = reference
+    service.ai.provider.structured = AsyncMock(return_value=provider_output(output, conversation))
+    body = AnalyzeRequest.model_validate({'language': 'ja', 'profile': {}, 'previous': None, 'conversation': conversation})
+    first = await service.ai.analyze(session, body)
+    reference.glossary = ['ChangedTerm']
+    second = await service.ai.analyze(session, body)
+    assert first['inputKey'] != second['inputKey']

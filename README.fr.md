@@ -20,6 +20,7 @@ Next.js gère l’interface et la transmission audio en temps réel, tandis que 
 - Consultation de l’IA selon le contexte de la réunion (Chat) et préparation de prises de parole (Ask)
 - Lecture à voix haute des propositions vérifiées, avec pause et reprise
 - Création d’un texte de référence et d’un glossaire à partir de PDF, PowerPoint, images et textes
+- Consultation des sources du glossaire et utilisation de 100 termes maximum issus des noms enregistrés, des documents et de l’analyse comme indices de reconnaissance vocale (sauf Apple Live)
 - Enregistrement des données et résumés des réunions, et export des comptes rendus en Markdown
 - Interface et voix en japonais, anglais, chinois simplifié et français
 - Apparence claire, sombre ou selon le système, dans une palette moka
@@ -32,7 +33,9 @@ Next.js gère l’interface et la transmission audio en temps réel, tandis que 
 
 ## Installation
 
-Téléchargez le DMG pour Apple Silicon depuis [Releases](https://github.com/uotian/ledad-app/releases/latest), ouvrez-le et copiez `ledad.app` dans Applications. Le DMG actuel est signé avec Apple Development et n’est pas notarié ; macOS peut empêcher son ouverture.
+Téléchargez le DMG pour Apple Silicon depuis [Releases](https://github.com/uotian/ledad-app/releases/latest), ouvrez-le et copiez `ledad.app` dans Applications. L’application incluse est signée avec Apple Development ; le DMG lui-même n’est ni signé ni notarié, et macOS peut bloquer l’ouverture de l’application.
+
+Si macOS bloque cette application dont vous avez vérifié la provenance, fermez l’alerte, puis ouvrez **Réglages Système → Confidentialité et sécurité → Ouvrir quand même**. Consultez les [instructions Apple](https://support.apple.com/fr-fr/102445).
 
 Pour compiler depuis les sources sur votre Mac, suivez les étapes ci-dessous.
 

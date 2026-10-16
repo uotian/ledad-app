@@ -121,18 +121,23 @@ it('遅れた終了・確定通知が次の区切りを遅らせない', async (
   expect(sockets[0].sendRealtimeInput).toHaveBeenLastCalledWith({ audioStreamEnd: true });
 });
 
-it('初回接続・接続更新ともに、認識に使わない名前設定を送らない', async () => {
+it('3分ごとの接続更新で、その時点の名前設定を取り直す', async () => {
+  let name = '内藤芳彦';
+  vi.stubGlobal('localStorage', { getItem: () => JSON.stringify({ name, aliases: '' }) });
   await connection.start(30);
-  await vi.advanceTimersByTimeAsync(9 * minute + 1500);
+  expect(JSON.parse(tokens()[0][1].body).profile.name).toBe('内藤芳彦');
+  name = '内藤さん';
+  await vi.advanceTimersByTimeAsync(3 * minute + 1500);
   expect(tokens()).toHaveLength(2);
-  for (const [, options] of tokens())
-    expect(JSON.parse(options.body)).toEqual({ sessionId: 'meeting-id', provider: 'gemini' });
+  expect(JSON.parse(tokens()[1][1].body)).toEqual({
+    sessionId: 'meeting-id', profile: { name: '内藤さん', aliases: '' }, provider: 'gemini',
+  });
 });
 
-it('9分で更新し、更新中のPCMを順序と収録時刻を保って一度だけ新接続に送る', async () => {
+it('3分で更新し、更新中のPCMを順序と収録時刻を保って一度だけ新接続に送る', async () => {
   await connection.start(30);
   push();
-  await vi.advanceTimersByTimeAsync(9 * minute);
+  await vi.advanceTimersByTimeAsync(3 * minute);
   expect(callbacks.onUpdating).toHaveBeenLastCalledWith(true);
   expect(sockets[0].sendRealtimeInput).toHaveBeenLastCalledWith({ audioStreamEnd: true });
   const capturedAt = Date.now();
@@ -208,7 +213,7 @@ it('更新の接続待ちがタイムアウトしたら停止し、遅れて開�
         resolve = r;
       }),
   );
-  await vi.advanceTimersByTimeAsync(9 * minute + 1500 + 15_000);
+  await vi.advanceTimersByTimeAsync(3 * minute + 1500 + 15_000);
   expect(callbacks.onError).toHaveBeenCalledOnce();
   const close = vi.fn();
   resolve({ close, sendRealtimeInput: vi.fn() });

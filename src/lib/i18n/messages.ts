@@ -1,4 +1,10 @@
 export const messages: Record<string, { en: string; zh: string; fr: string }> = {
+  '{count}語': { en: '{count} terms', zh: '{count}词', fr: '{count} termes' },
+  ドキュメント: { en: 'Documents', zh: '文档', fr: 'Documents' },
+  会話分析: { en: 'Conversation analysis', zh: '对话分析', fr: 'Analyse de la conversation' },
+  出典: { en: 'Source', zh: '来源', fr: 'Source' },
+  用語: { en: 'Term', zh: '术语', fr: 'Terme' },
+  '用語はまだありません。': { en: 'No terms yet.', zh: '暂无术语。', fr: 'Aucun terme pour le moment.' },
   音声生成中: { en: 'Generating audio', zh: '正在生成语音', fr: 'Génération audio' },
   読み上げ中: { en: 'Speaking', zh: '正在朗读', fr: 'Lecture en cours' },
   読み上げ失敗: { en: 'Speech failed', zh: '朗读失败', fr: 'Échec de la lecture' },
@@ -294,11 +300,11 @@ export const messages: Record<string, { en: string; zh: string; fr: string }> = 
   資料の追加: { en: 'Add documents', zh: '添加资料', fr: 'Ajouter des documents' },
   会議を始める: { en: 'Start a meeting', zh: '开始会议', fr: 'Démarrer une réunion' },
   '準備しています…': { en: 'Preparing…', zh: '正在准备…', fr: 'Préparation…' },
-  '名前や呼ばれ方を「、」やスペースで区切って入力してください。言及の検出に使います。設定はこの端末に保存され、言及を解析するときにAIへ送られます。':
+  '名前や呼ばれ方をスペース区切りで入力してください。言及の検出に使います。設定はこの端末に保存され、会話分析や音声認識のときにAIへ送られます。':
     {
-      en: 'Enter your name and other names you go by, separated by commas or spaces. They help detect mentions. Settings are saved on this device and sent to AI when analyzing mentions.',
-      zh: '请输入姓名或称呼，用顿号、逗号或空格分隔。它们用于检测提及。设置保存在本设备上，并在分析提及时发送给 AI。',
-      fr: 'Saisissez votre nom et vos autres appellations, séparés par des virgules ou des espaces, pour détecter les mentions. Ces réglages sont enregistrés sur cet appareil et envoyés à l’IA lors de l’analyse des mentions.',
+      en: 'Enter your name and other names you go by, separated by spaces. They help detect mentions. Settings are saved on this device and sent to AI for conversation analysis and speech recognition.',
+      zh: '请输入姓名或称呼，用空格分隔。它们用于检测提及。设置保存在本设备上，并在对话分析和语音识别时发送给 AI。',
+      fr: 'Saisissez votre nom et vos autres appellations, séparés par des espaces, pour détecter les mentions. Ces réglages sont enregistrés sur cet appareil et envoyés à l’IA pour l’analyse de la conversation et la reconnaissance vocale.',
     },
   会話分析中: { en: 'Analyzing conversation', zh: '会话分析中', fr: 'Analyse de la conversation' },
   '会話分析待ち（あと約{seconds}秒）': {
@@ -418,10 +424,10 @@ export const messages: Record<string, { en: string; zh: string; fr: string }> = 
       zh: '对话分析会查找对你的提及。名字保存在此设备上，并在分析对话时发送给 AI。',
       fr: 'L’analyse détecte les mentions vous concernant. Votre nom est enregistré sur cet appareil et envoyé à l’IA lors de l’analyse de la conversation.',
     },
-  '例：内藤義彦、内藤さん、Naito、Yoshihiko': {
-    en: 'e.g. Yoshihiko Naito, Naito, Yoshihiko',
-    zh: '例如：内藤义彦、内藤、Naito、Yoshihiko',
-    fr: 'Ex. : Camille Martin, Martin, Camille',
+  '例：内藤芳彦 内藤さん Naito Yoshihiko': {
+    en: 'e.g. Naito Yoshihiko',
+    zh: '例如：内藤芳彦 内藤 Naito Yoshihiko',
+    fr: 'Ex. : Camille Martin',
   },
   'あなたの名前・呼ばれ方': {
     en: 'Your name and other names you go by',
@@ -1378,20 +1384,10 @@ export const messages: Record<string, { en: string; zh: string; fr: string }> = 
     zh: '已停止',
     fr: 'Arrêté',
   },
-  '会話を、ここで受け止めます。': {
-    en: 'The conversation appears here.',
-    zh: '会话内容会显示在这里。',
-    fr: 'La conversation apparaît ici.',
-  },
-  '聞き取った言葉が順番に表示されます。': {
-    en: 'Transcribed speech appears in order.',
-    zh: '识别到的内容会按顺序显示。',
-    fr: 'Les interventions transcrites apparaissent dans l’ordre.',
-  },
-  '気になる発言から候補を作れます。': {
-    en: 'Prepare suggestions from the conversation.',
-    zh: '可根据会话内容准备候选内容。',
-    fr: 'Préparer des propositions à partir de la conversation.',
+  '文字起こしと翻訳がここに表示されます。': {
+    en: 'Transcriptions and translations appear here.',
+    zh: '转写和翻译内容会显示在这里。',
+    fr: 'Les transcriptions et les traductions apparaissent ici.',
   },
   会話を手入力で追加: {
     en: 'Add conversation manually',

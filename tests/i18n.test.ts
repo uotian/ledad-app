@@ -82,6 +82,7 @@ it('フランス語の会議と分析結果を保存形式で読み戻せる', a
   session.settings.language = 'fr';
   session.settings.translationLanguage = 'fr';
   session.analyze = {
+    glossary: [],
     topics: [{ id: 'budget', title: 'Budget', summary: 'À confirmer.' }],
     mentions: [],
     suggestedQuestions: [],

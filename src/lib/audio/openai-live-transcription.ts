@@ -1,3 +1,4 @@
+import { readProfile } from '@/components/settings/profile/profile';
 import { api } from '@/lib/api';
 import { encodeBase64 } from '@/lib/base64';
 import { LiveUsage } from './live-usage';
@@ -96,7 +97,11 @@ export class OpenAILiveTranscription {
         {
           method: 'POST',
           signal: this.abort.signal,
-          body: JSON.stringify({ sessionId: this.sessionId, provider: 'openai' }),
+          body: JSON.stringify({
+            sessionId: this.sessionId,
+            profile: readProfile(),
+            provider: 'openai',
+          }),
         },
       );
       this.usage = new LiveUsage(token.usageId, this.sessionId, this.callbacks.onUsageError);
@@ -152,7 +157,7 @@ export class OpenAILiveTranscription {
       });
       this.rotationTimer = setTimeout(() => {
         this.rotation = this.rotate();
-      }, 9 * 60_000);
+      }, 3 * 60_000);
     } finally {
       clearTimeout(timeout);
     }
@@ -231,7 +236,7 @@ export class OpenAILiveTranscription {
       this.socket!.send(
         JSON.stringify({
           type: 'input_audio_buffer.append',
-          audio: encodeBase64(new Uint8Array(Math.ceil(padding * 1.5 / 2) * 2)),
+          audio: encodeBase64(new Uint8Array(Math.ceil((padding * 1.5) / 2) * 2)),
         }),
       );
       this.usage?.sent(padding);

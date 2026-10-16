@@ -10,6 +10,7 @@ import AssistantPanel, { type AssistantTab } from './assistant/AssistantPanel';
 import SessionControls from './controls/SessionControls';
 import DocumentPanel from '@/components/setup/documents/DocumentPanel';
 import MeetingUsageCost from './header/MeetingUsageCost';
+import Glossary from './header/Glossary';
 export default function MeetingScreen({
   store,
   meeting,
@@ -43,6 +44,7 @@ export default function MeetingScreen({
     <>
       <div className="meeting-header">
         <h1 title={session.title}>{session.title}</h1>
+        <Glossary session={session} />
         <button
           type="button"
           className="meeting-docs-button"

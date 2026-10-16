@@ -15,8 +15,8 @@ session.settings.translationLanguage = 'ja';
 session.startedAt = '2026-10-15T01:00:00.000Z';
 const conversation = [
   [
-    'Today, let’s discuss the pilot launch for our new service.',
-    '今日は、新サービスの試験導入について話しましょう。',
+    'Today, let’s discuss the pilot launch of Ledad.',
+    '今日は、Ledadの試験導入について話しましょう。',
   ],
   ['We plan to start with two teams next month.', '来月、まず2チームで開始する予定です。'],
   [
@@ -37,10 +37,12 @@ session.transcripts = conversation.map(([text, translation], index) => ({
   source: 'mixed',
   analyzed: true,
   disposition: 'open',
+  ...(index < 3 ? { correctedAt: session.startedAt } : {}),
 }));
 session.meetingStartedAt = session.transcripts[0].timestamp;
 session.meetingLastAt = session.transcripts.at(-1).timestamp;
 session.analyze = {
+  glossary: [{ term: 'Ledad', evidenceId: session.transcripts[0].id }],
   topics: [
     {
       id: 'pilot',
@@ -198,6 +200,9 @@ if (process.argv.includes('--check')) {
       await page.getByText(content, { exact: true }).waitFor();
       frames.push(await page.screenshot({ animations: 'disabled' }));
     }
+    await page.getByRole('button', { name: '用語集', exact: true }).click();
+    await page.getByRole('dialog', { name: '用語集', exact: true }).waitFor();
+    frames.push(await page.screenshot({ animations: 'disabled' }));
     assert.deepEqual(errors, [], 'The demo must render without runtime errors.');
     const output = resolve('docs/assets/ledad-demo.gif');
     const gif = await makeGif(frames);
@@ -205,8 +210,8 @@ if (process.argv.includes('--check')) {
     assert.equal(metadata.pages, frames.length);
     assert.equal(metadata.width, 1200);
     assert.equal(metadata.pageHeight, 720);
-    assert.equal(metadata.pages, 4);
-    assert.deepEqual(metadata.delay, [2000, 2000, 2000, 2000]);
+    assert.equal(metadata.pages, 5);
+    assert.deepEqual(metadata.delay, [2000, 2000, 2000, 2000, 2000]);
     await mkdir(resolve('docs/assets'), { recursive: true });
     await writeFile(output, gif);
     const readme = resolve('README.md');

@@ -37,7 +37,10 @@ test('録音の再認識は本文と訳文を同時更新し、時刻・参照�
     }
     await route.continue({ url: url.replace(':4319', ':4320') });
   });
-  await page.addInitScript(() => localStorage.setItem('ledad.language', 'en'));
+  await page.addInitScript(() => {
+    localStorage.setItem('ledad.language', 'en');
+    localStorage.setItem('ledad.profile.v1', JSON.stringify({ name: '認識用サンプル', aliases: '' }));
+  });
   try {
     await page.goto(`/session/?id=${session.id}`);
     await expect(page.locator('.transcript-item')).toHaveCount(30);
@@ -61,7 +64,7 @@ test('録音の再認識は本文と訳文を同時更新し、時刻・参照�
       rows.map((t: { id: string }) => t.id),
     );
     await expect.poll(() => !!review).toBe(true);
-    expect(review!.request().postDataJSON()).not.toHaveProperty('profile');
+    expect(review!.request().postDataJSON().profile).toEqual({ name: '認識用サンプル', aliases: '' });
     expect(review!.request().postDataJSON().transcriptIds).toEqual(
       rows.map((t: { id: string }) => t.id),
     );

@@ -1,7 +1,7 @@
 .settings-dialog {
   font-size: calc(14px * var(--text-scale, 1));
   width: min(480px, calc(100vw - 40px));
-  border: 1px solid var(--line);
+  border: 1px solid var(--card-border);
   border-radius: 18px;
   padding: 28px;
   background: var(--surface);
@@ -146,24 +146,23 @@
   align-items: center;
   justify-content: center;
   min-width: 0;
-  height: 56px;
+  height: 40px;
   gap: 6px;
   padding: 8px 6px;
   font-size: calc(11px * var(--text-scale, 1));
   line-height: 1.4;
   text-align: center;
-  border: 1px solid var(--line);
+  border: 1px solid var(--card-border);
   border-radius: 10px;
   cursor: pointer;
 }
 .theme-option.selected {
-  border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--ink);
 }
-.theme-option:focus-within {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
+.theme-option:has(input:focus-visible) {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 .theme-option input {
   position: absolute;
@@ -175,7 +174,7 @@
   display: flex;
   gap: 8px;
   margin-top: 20px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--card-border);
 }
 .settings-tabs button {
   color: var(--muted);
@@ -187,7 +186,7 @@
 }
 .settings-tabs button[aria-selected='true'] {
   color: var(--ink);
-  border-bottom-color: var(--accent);
+  background: var(--accent-soft);
 }
 .settings-tabs + .field {
   margin-top: 22px;

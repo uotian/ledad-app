@@ -77,15 +77,16 @@ svg {
 button:focus-visible,
 a:focus-visible,
 summary:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 4px;
+  outline: none;
+  filter: brightness(0.85);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
-input:focus,
+input:not([type='checkbox']):focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--focus-ring);
+  background: var(--surface-tint);
 }
 ::selection {
   background: var(--selection-bg);
@@ -159,6 +160,7 @@ select:focus {
   width: 24px;
   height: 24px;
   color: var(--muted);
+  stroke-width: 1;
 }
 .sidebar .brand > span:last-child {
   display: none;
@@ -208,6 +210,7 @@ select:focus {
   width: 24px;
   height: 24px;
   flex-shrink: 0;
+  stroke-width: 1;
 }
 .app-main {
   margin-left: var(--sidebar-width);
@@ -379,7 +382,7 @@ select:focus {
 }
 .card {
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--card-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }

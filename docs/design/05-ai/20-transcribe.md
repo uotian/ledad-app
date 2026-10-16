@@ -15,7 +15,7 @@ Liveで途中・確定テキストを表示し、録音区間ごとのFixで再�
 
 - 音声：16kHz・モノラル・16bit PCM。OpenAI Liveへの送信時だけ24kHzへ変換し、Fixへは16kHzのWAVで送ります。
 - 言語：[会議設定](../02-frontend/02-home/02-meeting-setting.md#基本設定)の「会議の言語」「翻訳先の言語」。
-- 用語：[Document](10-document.md)の`glossary`。資料本文・要約・プロフィールは認識／翻訳へ送りません。Apple Liveは用語集を使いません。
+- 用語：[認識用の用語集](28-glossary.md)。登録名・ドキュメント・会話分析を統合してSTTへ渡します。資料本文・要約は認識へ送りません。Apple Liveは用語集を使いません。翻訳はドキュメント・会話分析の語だけを使います。
 - プロバイダー：[アプリ設定](../02-frontend/01-layout/01.01-setting.md)の「Live文字起こしのモデル」「Fixed文字起こしのモデル」。Liveの既定はOpenAIのみのモードでOpenAI、Gemini併用でGeminiです。FixはどちらもOpenAIが既定です。
 - 区切り：Liveは連続音声15秒で確定を促します。Fixは[会議設定](../02-frontend/02-home/02-meeting-setting.md#詳細設定)の「Fixed文字起こしの間隔」（既定30秒）です。
 
