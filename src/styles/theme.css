@@ -1,41 +1,115 @@
 :root {
-  /* ニュートラル色はstone系。操作・選択の差し色は塔のロゴと同じ茶色系。 */
-  --input-bg: #dedbd8;
-  --input-text: #1c1917;
-  --input-placeholder: #57534e;
-  --input-border: #e7e5e4;
+  /* アイコンのカフェモカを背景に、操作・選択はこげ茶で統一。 */
+  --input-bg: #faf3e9;
+  --input-text: #34251d;
+  --input-placeholder: #705440;
+  --input-border: #a4866d;
   --on-accent: #ffffff;
   --radius: 16px;
-  color-scheme: dark;
-  --bg: #0c0a09;
-  --surface: #1c1917;
-  --surface-tint: #292524;
-  --surface-overlay: #1c1917f2;
-  --ink: #fafaf9;
-  --text: #e7e5e4;
-  --muted: #a8a29e;
-  --line: #44403c;
-  --line-strong: #a8a29e;
-  --accent: #c79a70;
-  --brand: #c79a70;
-  --chat-user-bg: #090807;
-  --chat-user-text: #f5f5f4;
-  --accent-solid: #8b5e3c;
-  --accent-hover: #996c47;
-  --accent-soft: #392b21;
-  --focus-ring: #c79a7040;
-  --selection-bg: #65472f;
+  --live-color: #a43d38;
+  --fixed-color: #285fa6;
+  --audio-stopped: #642019;
+  --audio-listening: #15345f;
+  --audio-preparing: #493200;
+  --analysis-progress: #60203b;
+  color-scheme: light;
+  --bg: #c79a70;
+  --surface: #f3e5d5;
+  --surface-tint: #e7d1ba;
+  --surface-overlay: #f3e5d5f2;
+  --ink: #2b2019;
+  --text: #3d2c22;
+  --muted: #493224;
+  --line: #bd9b7e;
+  --line-strong: #87664d;
+  --accent: #4b3022;
+  --brand: #4b3022;
+  --bar-bg: #4b3022;
+  --bar-text: #f3e5d5;
+  --bar-hover: #63412d;
+  --chat-user-bg: #e1c5a9;
+  --chat-user-text: #34251d;
+  --accent-solid: #4b3022;
+  --accent-hover: #63412d;
+  --accent-soft: #dfc1a3;
+  --focus-ring: #4b302240;
+  --selection-bg: #4b3022;
   --selection-text: #ffffff;
-  --success: #80c79c;
-  --danger: #ffb4ac;
-  --danger-bg: #412628;
-  --shadow: 0 3px 18px #0002;
-  --shadow-hover: 0 8px 22px #0003;
-  --shadow-dialog: 0 20px 70px #0006;
-  --backdrop: #00000066;
+  --success: #326343;
+  --danger: #9e352c;
+  --danger-bg: #f5d9cf;
+  --shadow: 0 3px 18px #4b302212;
+  --shadow-hover: 0 8px 22px #4b30221f;
+  --shadow-dialog: 0 20px 70px #2b201940;
+  --backdrop: #2b201966;
 }
 
 .button-danger:hover:not(:disabled) {
   background: var(--danger-bg);
   filter: brightness(0.95);
+}
+
+.sidebar {
+  background: var(--bar-bg);
+  border: 0;
+}
+.sidebar .brand-mark,
+.sidebar .nav-item {
+  color: var(--bar-text);
+}
+.sidebar .nav-item:not(.settings-button):hover,
+.sidebar .nav-item.active {
+  background: var(--bar-hover);
+  color: var(--bar-text);
+}
+.sidebar .brand:focus-visible,
+.sidebar .nav-item:focus-visible {
+  outline-color: var(--bar-text);
+}
+
+.session-controls {
+  background: var(--bg);
+  color: var(--text);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #1e1713;
+  --surface: #2c221c;
+  --surface-tint: #3b2e25;
+  --surface-overlay: #2c221cf2;
+  --ink: #fff4e8;
+  --text: #efdfce;
+  --muted: #cbb39c;
+  --line: #64503f;
+  --line-strong: #9e8166;
+  --input-bg: #241c17;
+  --input-text: #efdfce;
+  --input-placeholder: #cbb39c;
+  --input-border: #9e8166;
+  --accent: #deb58d;
+  --brand: #deb58d;
+  --bar-bg: #140f0c;
+  --bar-text: #efdfce;
+  --bar-hover: #3b2e25;
+  --chat-user-bg: #3b2e25;
+  --chat-user-text: #efdfce;
+  --accent-solid: #805334;
+  --accent-hover: #8b5b38;
+  --accent-soft: #493426;
+  --focus-ring: #deb58d55;
+  --selection-bg: #805334;
+  --success: #80c79c;
+  --danger: #ffb4ac;
+  --danger-bg: #492b29;
+  --shadow: 0 3px 18px #0002;
+  --shadow-hover: 0 8px 22px #0003;
+  --shadow-dialog: 0 20px 70px #0006;
+  --backdrop: #0008;
+  --live-color: #e88d86;
+  --fixed-color: #8ab4e8;
+  --audio-stopped: #ffb4ac;
+  --audio-listening: #8bbcff;
+  --audio-preparing: #e9c46a;
+  --analysis-progress: #f0a8cf;
 }

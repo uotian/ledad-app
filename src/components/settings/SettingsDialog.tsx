@@ -1,6 +1,7 @@
 'use client';
 import { useDialogDismiss } from '@/hooks/useDialogDismiss';
 import TextSizeSettings from './TextSizeSettings';
+import ThemeSettings from './ThemeSettings';
 import VoiceSettings from './VoiceSettings';
 import AnalyzeIntervalSettings from './AnalyzeIntervalSettings';
 import NameSettings from './profile/NameSettings';
@@ -141,6 +142,7 @@ export default function SettingsDialog({
           <NameSettings />
           <AnalyzeIntervalSettings />
           <LanguageSettings />
+          <ThemeSettings />
           <TextSizeSettings />
         </div>
       ) : (

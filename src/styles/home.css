@@ -1,3 +1,10 @@
+.app-main.home-main {
+  padding: 13px 32px 32px 20px;
+  max-width: none;
+}
+.home-main > .page-header {
+  margin-bottom: 12px;
+}
 .home-heading {
   display: flex;
   align-items: baseline;
@@ -19,7 +26,7 @@
   grid-template-columns: minmax(0, 1fr) max-content auto auto;
   column-gap: 17px;
   border: 1px solid var(--line);
-  border-radius: 13px;
+  border-radius: var(--radius);
   background: var(--surface);
   overflow: hidden;
 }

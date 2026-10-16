@@ -122,8 +122,8 @@ test('聞き取り停止後も回答生成・チャット・読み上げが完�
       'background-color',
       'rgb(164, 61, 56)',
     );
-    await expect(page.locator('.meeting-main')).toHaveCSS('padding-left', '16px');
-    await expect(page.locator('.meeting-main')).toHaveCSS('padding-right', '16px');
+    await expect(page.locator('.meeting-main')).toHaveCSS('padding-left', '12px');
+    await expect(page.locator('.meeting-main')).toHaveCSS('padding-right', '12px');
     await page
       .locator('.session-controls')
       .screenshot({ path: 'artifacts/listening-controls.png' });

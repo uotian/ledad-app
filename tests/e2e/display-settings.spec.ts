@@ -46,7 +46,7 @@ test('表示言語とS/M/Lは保存され、会議の言語や本文は変更し
         };
       });
     const originalChrome = await chromeMetrics();
-    expect(originalChrome.sidebarWidth).toBe(72);
+    expect(originalChrome.sidebarWidth).toBe(66);
     expect(originalChrome.iconWidth).toBe(24);
     await expect(page.locator('.local-badge, .workspace-label, .sidebar-bottom p')).toHaveCount(0);
     await page.getByRole('button', { name: '設定', exact: true }).click();

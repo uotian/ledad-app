@@ -21,7 +21,7 @@ export default function AppShell({
   return (
     <div className="app-shell" onDragOver={preventFileNavigation} onDrop={preventFileNavigation}>
       <Sidebar onHome={onHome} />
-      <main className={`app-main ${active === 'meeting' ? 'meeting-main' : ''}`}>
+      <main className={`app-main ${active === 'meeting' ? 'meeting-main' : active === 'home' ? 'home-main' : ''}`}>
         <ErrorBanner message={closeError} />
         {children}
       </main>

@@ -524,6 +524,10 @@ export const messages: Record<string, { en: string; zh: string; fr: string }> = 
     zh: '基于 {count} 条原始记录',
     fr: 'D’après {count} éléments sources',
   },
+  システム: { en: 'System', zh: '系统', fr: 'Système' },
+  外観: { en: 'Appearance', zh: '外观', fr: 'Apparence' },
+  ライト: { en: 'Light', zh: '浅色', fr: 'Clair' },
+  ダーク: { en: 'Dark', zh: '深色', fr: 'Sombre' },
   文字サイズ: { en: 'Text size', zh: '文字大小', fr: 'Taille du texte' },
   '保存できなかったため、この画面に残りました。もう一度ホームへ戻ってください。': {
     en: 'Could not save. You are still on this screen. Try returning home again.',

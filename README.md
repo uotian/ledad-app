@@ -22,6 +22,7 @@ Next.js handles the interface and real-time audio streaming, while Python manage
 - Generate reference text and a glossary from PDF, PowerPoint, images, and text documents
 - Save meeting records and summaries, and export meeting minutes as Markdown
 - Interface and speech in Japanese, English, Simplified Chinese, and French
+- Light, dark, and system appearance modes, with a mocha color palette
 
 ## Requirements
 

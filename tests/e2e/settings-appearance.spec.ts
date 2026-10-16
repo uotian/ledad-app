@@ -62,3 +62,33 @@ test('設定の文字サイズがS/M/Lに連動し、閉じるボタンに枠を
   await page.mouse.click(2, 2);
   await expect(dialog).not.toBeVisible();
 });
+
+test('外観を保存し、システム選択時だけOSの変更に追従する', async ({ page, context }) => {
+  await context.route('http://127.0.0.1:4319/**', (route) =>
+    route.continue({ url: route.request().url().replace(':4319', ':4320') }),
+  );
+  await page.addInitScript(() => localStorage.setItem('ledad.language', 'ja'));
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await page.getByRole('button', { name: '設定', exact: true }).click();
+  await page.getByRole('radio', { name: 'ダーク', exact: true }).check();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.getByRole('button', { name: '設定', exact: true }).click();
+  await expect(page.getByRole('radio', { name: 'ダーク', exact: true })).toBeChecked();
+  await page.getByRole('radio', { name: 'システム', exact: true }).check();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.getByRole('button', { name: '設定', exact: true }).click();
+  await expect(page.getByRole('radio', { name: 'システム', exact: true })).toBeChecked();
+  await page.emulateMedia({ colorScheme: 'light' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await page.getByRole('radio', { name: 'ライト', exact: true }).check();
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+});

@@ -2,6 +2,15 @@
 
 [English](CHANGELOG.md) | [日本語](CHANGELOG.ja.md)
 
+## v0.8.1 — 2026-10-17
+
+- Introduced a mocha light palette and a dark brown palette, with light, dark, and system appearance settings that are remembered across launches.
+- Matched the macOS title-bar background to the sidebar in each appearance mode.
+- Aligned home and meeting cards, refined sidebar and footer spacing, and set the transcription/AI-support card gap to 12px.
+- Removed the layout switcher's outer border and transcription-row hover backgrounds.
+
+This is a source-code release; notarized application downloads are not provided. Physical audio and external-provider end-to-end tests were not rerun for this release.
+
 ## v0.8.0 — 2026-10-17
 
 - Added a custom OpenAI-compatible endpoint (`base_url`) for text, documents, Fixed transcription, and speech output. Live transcription uses Apple while a custom endpoint is set.

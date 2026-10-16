@@ -116,13 +116,14 @@ select:focus {
   color: var(--muted);
 }
 .app-shell {
-  --sidebar-width: 72px;
+  --sidebar-gap: 12px;
+  --sidebar-width: calc(66px + var(--sidebar-gap));
   min-height: 100vh;
 }
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
-  width: var(--sidebar-width);
+  width: 66px;
   background: var(--surface);
   border-right: 1px solid var(--line);
   padding: 22px 6px 12px;
@@ -426,7 +427,7 @@ select:focus {
 input:not([type='checkbox']),
 select,
 textarea {
-  color-scheme: light;
+  color-scheme: inherit;
   background: var(--input-bg);
   border: 1px solid var(--input-border);
   border-radius: 8px;

@@ -22,6 +22,7 @@ Next.js gère l’interface et la transmission audio en temps réel, tandis que 
 - Création d’un texte de référence et d’un glossaire à partir de PDF, PowerPoint, images et textes
 - Enregistrement des données et résumés des réunions, et export des comptes rendus en Markdown
 - Interface et voix en japonais, anglais, chinois simplifié et français
+- Apparence claire, sombre ou selon le système, dans une palette moka
 
 ## Prérequis
 
