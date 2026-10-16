@@ -9,7 +9,7 @@
 - Aligned home and meeting cards, refined sidebar and footer spacing, and set the transcription/AI-support card gap to 12px.
 - Removed the layout switcher's outer border and transcription-row hover backgrounds.
 
-This is a source-code release; notarized application downloads are not provided. Physical audio and external-provider end-to-end tests were not rerun for this release.
+Apple Silicon DMG and source code are available on GitHub Releases. The DMG uses Apple Development signing and is not notarized; macOS may block it from opening. Physical audio and external-provider end-to-end tests were not rerun for this release.
 
 ## v0.8.0 — 2026-10-17
 

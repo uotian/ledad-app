@@ -16,9 +16,19 @@ Frontend・Backend・音声取得機能を一つのMacアプリに同梱しま�
 - Apple Developmentでアプリと同梱実行ファイルに署名します。
 - 署名検証に成功したアプリを完成品として置き換えます。
 - 権限とKeychainの継続利用のため、同じ署名主体を使います。
-- Developer IDによる第三者配布・公証・自動更新は未対応です。
+- DMGをGitHub Releasesで配布します。Developer ID署名・公証・自動更新は未対応で、macOSがダウンロードしたアプリの起動をブロックする場合があります。
 
 ビルド・証明書の設定・検証手順は[利用・開発ガイド](../../guide.md#開発する)にまとめます。
+
+## DMG
+
+`npm run app:build`は署名済みの`build/ledad.app`からDMGとSHA-256ファイルを生成します。DMGだけの再作成は`npm run app:dmg`です。
+
+- `scripts/package-dmg.mjs`がアプリのバージョン・arm64形式・署名を確認します。
+- DMGには`ledad.app`と`/Applications`へのリンクだけを入れます。
+- イメージの整合性を検証し、読み取り専用でマウントして格納後のアプリ署名・バージョンとApplicationsリンクを確認します。
+- 成果物は`build/ledad_<version>_aarch64.dmg`と同名の`.sha256`です。既存タグから作ったアプリを配布する場合、タグは変更せず、その版のReleaseへ2ファイルを追加します。
+- Release本文にはApple Development署名・未公証であることを明記します。Developer ID署名・公証に移行する際は署名手順を更新します。
 
 ## アプリアイコン
 

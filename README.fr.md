@@ -32,7 +32,9 @@ Next.js gère l’interface et la transmission audio en temps réel, tandis que 
 
 ## Installation
 
-Compilez l’application depuis les sources sur votre propre Mac. Aucun téléchargement d’application précompilée et notariée n’est fourni.
+Téléchargez le DMG pour Apple Silicon depuis [Releases](https://github.com/uotian/ledad-app/releases/latest), ouvrez-le et copiez `ledad.app` dans Applications. Le DMG actuel est signé avec Apple Development et n’est pas notarié ; macOS peut empêcher son ouverture.
+
+Pour compiler depuis les sources sur votre Mac, suivez les étapes ci-dessous.
 
 ### Préparer l’environnement de compilation
 

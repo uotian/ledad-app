@@ -32,7 +32,9 @@ Next.js 负责界面和实时音频传输，Python 负责会议数据管理和 A
 
 ## 安装
 
-请在自己的 Mac 上从源码构建应用。目前不提供经过公证的预构建应用下载。
+从 [Releases](https://github.com/uotian/ledad-app/releases/latest) 下载 Apple Silicon 版 DMG，打开后将 `ledad.app` 复制到 Applications。目前的 DMG 使用 Apple Development 签名，尚未公证，macOS 可能会阻止其启动。
+
+如需在自己的 Mac 上从源码构建，请按照以下步骤操作。
 
 ### 准备构建环境
 

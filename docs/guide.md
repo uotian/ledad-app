@@ -6,7 +6,7 @@
 
 ## 起動する
 
-自分のMacでソースコードからビルドして使います。手順は[README](../README.ja.md#セットアップ)を参照してください。生成された`build/ledad.app`をFinderから開きます。対応環境はmacOS 26以降・Apple Siliconです。Pythonの実行環境はアプリへ同梱するため、利用時にPython・Node.js・開発サーバーの導入は不要です。
+[Releases](https://github.com/uotian/ledad-app/releases/latest)のDMGを開き、`ledad.app`をApplicationsへコピーして起動します。現在はApple Development署名・未公証のため、macOSが起動をブロックする場合があります。ソースコードからのビルド手順は[README](../README.ja.md#セットアップ)を参照してください。対応環境はmacOS 26以降・Apple Siliconです。Pythonの実行環境はアプリへ同梱するため、利用時にPython・Node.js・開発サーバーの導入は不要です。
 
 初回は左下の「設定」でOpenAIとGeminiのAPIキーを登録します。キーはMacのキーチェーンに保存し、登録済みの値を画面へ返しません。初めて会議を開始するときに、マイク・システム音声へのアクセスを許可します。拒否した場合は、システム設定 → プライバシーとセキュリティ → マイク／画面収録とシステムオーディオ録音でledadを許可してください。再起動を求められた場合はアプリを開き直します。
 
@@ -109,7 +109,7 @@ npm run app:build
 
 初回ビルド前に、Xcodeの「Settings」→「Accounts」でApple Accountを登録し、自分のTeamの「Manage Certificates」→「＋」→「Apple Development」から開発用証明書を作成します。個人のMacでの開発には無料のPersonal Teamを使えます。証明書と秘密鍵はログインキーチェーンに保存し、再ビルド時も同じTeamのものを使います。
 
-静的画面・ローカルサービス・Swiftの音声取得モジュールをビルドし、Apple Development証明書による署名と署名検証まで行います。成功すると、起動用の`build/ledad.app`を最新版に差し替えます。アドホック署名・自己署名から切り替えた直後は、一度だけ録音権限の登録し直しや、APIキーへのアクセスの「常に許可」が必要になる場合があります。第三者への配布に必要なDeveloper ID署名・公証は含みません。開発用証明書が複数ある場合は、`APPLE_SIGNING_IDENTITY`に使う証明書の名前またはSHA-1ハッシュを指定します。
+静的画面・ローカルサービス・Swiftの音声取得モジュールをビルドし、Apple Development証明書による署名と署名検証まで行います。成功すると、起動用の`build/ledad.app`を最新版に差し替え、`build/ledad_<version>_aarch64.dmg`とSHA-256ファイルを生成します。署名済みアプリからDMGだけを再作成する場合は`npm run app:dmg`を使います。アドホック署名・自己署名から切り替えた直後は、一度だけ録音権限の登録し直しや、APIキーへのアクセスの「常に許可」が必要になる場合があります。第三者への配布に必要なDeveloper ID署名・公証は含みません。開発用証明書が複数ある場合は、`APPLE_SIGNING_IDENTITY`に使う証明書の名前またはSHA-1ハッシュを指定します。
 
 APIキーのキーチェーン許可は録音権限とは別の判定です。自己署名のローカル証明書では、アプリの内容が変わるとキーチェーンのpartition IDも変わり、「常に許可」を選んでも再確認が必要になる場合があります。再ビルド後もこの許可を維持するには、Appleの開発用証明書など、同じTeam IDで判定される署名を使用します。
 

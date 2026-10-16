@@ -32,7 +32,9 @@ Next.jsが画面とリアルタイムの音声送信を、Pythonが会議デー�
 
 ## セットアップ
 
-自分のMacでソースコードからビルドして使います。公証済みのビルド済みアプリは配布していません。
+[Releases](https://github.com/uotian/ledad-app/releases/latest)からApple Silicon用DMGをダウンロードし、開いて`ledad.app`をApplicationsへコピーします。現在のDMGはApple Development署名・未公証のため、macOSが起動をブロックする場合があります。
+
+自分のMacでソースコードからビルドする場合は、以下の手順を使います。
 
 ### ビルド環境の準備
 

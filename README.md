@@ -32,7 +32,9 @@ Next.js handles the interface and real-time audio streaming, while Python manage
 
 ## Setup
 
-Build the app locally on your own Mac. Prebuilt, notarized downloads are not provided.
+Download the Apple Silicon DMG from [Releases](https://github.com/uotian/ledad-app/releases/latest), open it, and copy `ledad.app` to Applications. The current DMG uses Apple Development signing and is not notarized; macOS may block it from opening.
+
+To build locally from source, follow the steps below.
 
 ### Prepare the build environment
 
