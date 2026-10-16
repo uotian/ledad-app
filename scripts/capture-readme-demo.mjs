@@ -132,7 +132,7 @@ if (process.argv.includes('--check')) {
         const path = url.pathname;
         if (path === '/api/sessions') return route.fulfill({ json: [] });
         if (path === '/api/config')
-          return route.fulfill({ json: { openai: true, gemini: true } });
+          return route.fulfill({ json: { openai: true, gemini: false, aiMode: 'openai' } });
         if (path.endsWith('/cost'))
           return route.fulfill({
             json: {
@@ -180,6 +180,8 @@ if (process.argv.includes('--check')) {
     await page.getByRole('button', { name: '会議を始める', exact: true }).waitFor();
     await page.getByText('AIキー設定済み', { exact: true }).waitFor();
     await page.evaluate(() => document.fonts.ready);
+    const { version } = JSON.parse(await readFile(resolve('package.json'), 'utf8'));
+    assert.equal(await page.locator('.app-version').textContent(), `v${version}`);
     const frames = [await page.screenshot({ animations: 'disabled' })];
     // Load the sample meeting directly so the demo never starts real audio capture.
     await page.goto(`http://127.0.0.1:3107/session/?id=${session.id}`);

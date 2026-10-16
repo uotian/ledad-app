@@ -244,4 +244,18 @@ Macアプリでは設定 → APIキー → 聞き取り（Live）からApple Spe
 
 ### アプリのバージョン
 
-アプリのバージョンは `package.json` の `version` で管理します。ホームの表示とmacOSアプリのバージョンは同じ値を参照します。現在は `0.1.0` です。更新時は `npm version patch --no-git-tag-version`（必要に応じて `minor` / `major`）で `package-lock.json` も更新し、`npm run app:build` で反映します。
+アプリのバージョンは `package.json` の `version` で管理します。ホームの表示とmacOSアプリのバージョンは同じ値を参照します。更新時は `npm version patch --no-git-tag-version`（必要に応じて `minor` / `major`）で `package-lock.json` も更新し、`npm run app:build` で反映します。
+
+リリース時はRustの `src-tauri/Cargo.toml`・`Cargo.lock` とPythonの `backend/pyproject.toml`・`uv.lock` のアプリ自身のバージョンも揃えます。依存ライブラリの番号は変更しません。変更内容は[変更履歴](../CHANGELOG.ja.md)を参照してください。
+
+### READMEの画面デモ
+
+`docs/assets/ledad-demo.gif` は全言語のREADMEで共用します。画面や表示バージョンの変更後は、最新のFrontendから架空の会話データで再生成します。実APIや実際の録音は使用しません。
+
+```sh
+npm run build
+node scripts/capture-readme-demo.mjs --check
+node scripts/capture-readme-demo.mjs
+```
+
+`--check` はサンプルデータとGIFエンコードの検証のみで、画像を更新しません。生成後はホーム・Topics・Chat・Askの全場面を確認します。
