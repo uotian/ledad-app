@@ -33,52 +33,15 @@ Next.js handles the interface and real-time audio streaming, while Python manage
 
 ## Setup
 
-Download the Apple Silicon DMG from [Releases](https://github.com/uotian/ledad-app/releases/latest), open it, and copy `ledad.app` to Applications. The bundled app is signed with Apple Development; the DMG itself is unsigned and not notarized, so macOS may block the app from opening.
+### Install the app
+
+1. Download the Apple Silicon `.dmg` file from [Releases](https://github.com/uotian/ledad-app/releases/latest).
+2. Open the DMG and drag `ledad.app` into the Applications folder.
+3. Open `ledad.app` from Applications.
+
+The bundled app is signed with Apple Development; the DMG itself is unsigned and not notarized, so macOS may block the app from opening.
 
 If macOS blocks this trusted download, dismiss the alert and open **System Settings → Privacy & Security → Open Anyway**. See [Apple's instructions](https://support.apple.com/en-us/102445).
-
-To build locally from source, follow the steps below.
-
-### Prepare the build environment
-
-1. Install [Node.js](https://nodejs.org/en/download) 22 or later.
-2. Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Rust (rustup)](https://rust-lang.org/tools/install/) following their official instructions.
-3. Install Xcode from the Mac App Store, open it once, and complete its initial setup.
-
-### Get the source
-
-```sh
-git clone https://github.com/uotian/ledad-app.git
-cd ledad-app
-```
-
-### Install dependencies
-
-Run from the project root:
-
-```sh
-npm ci
-```
-
-### Prepare a signing certificate
-
-Before the first build, prepare a development certificate for signing:
-
-1. Open Xcode, go to Settings → Accounts, and add your Apple Account.
-2. Select your Team and open Manage Certificates.
-3. Click “+” and create an Apple Development certificate.
-
-The certificate and private key are stored in your Mac’s login keychain and reused for subsequent builds.
-
-### Build the app
-
-Run from the project root:
-
-```sh
-npm run app:build
-```
-
-This creates `build/ledad.app`. Open it in Finder.
 
 ### Register API keys
 
@@ -98,6 +61,7 @@ When prompted at the first meeting start, allow microphone and system audio acce
 
 ## Notes
 
+- This app is developed through vibe coding with Codex.
 - OpenAI and Gemini API usage incurs charges. The displayed cost is an estimate.
 - Meeting data is stored on your Mac. Audio, conversations, and documents are sent to external AI APIs as needed for processing.
 - Listening stops automatically after 30 minutes by default (configurable). Choose Resume to continue.
@@ -113,6 +77,4 @@ See the [changelog](CHANGELOG.md).
 
 ## License
 
-[MIT](LICENSE). Bundled fonts and icons retain their [font](public/licenses/Outfit-OFL.txt) and [icon](public/icons/providers/LICENSE) licenses.
-
-This app is developed through vibe coding with Codex.
+[MIT](LICENSE)

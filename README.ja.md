@@ -33,52 +33,15 @@ Next.jsが画面とリアルタイムの音声送信を、Pythonが会議デー�
 
 ## セットアップ
 
-[Releases](https://github.com/uotian/ledad-app/releases/latest)からApple Silicon用DMGをダウンロードし、開いて`ledad.app`をApplicationsへコピーします。同梱アプリはApple Development署名、DMG自体は未署名・未公証のため、macOSが起動をブロックする場合があります。
+### アプリのインストール
+
+1. [Releases](https://github.com/uotian/ledad-app/releases/latest)からApple Silicon用の`.dmg`ファイルをダウンロードします。
+2. DMGを開き、`ledad.app`を「アプリケーション」フォルダへドラッグします。
+3. 「アプリケーション」フォルダから`ledad.app`を開きます。
+
+同梱アプリはApple Development署名、DMG自体は未署名・未公証のため、macOSが起動をブロックする場合があります。
 
 入手元を確認したアプリがブロックされた場合は、警告を閉じて**システム設定 → プライバシーとセキュリティ → このまま開く**から許可できます。[Appleの手順](https://support.apple.com/ja-jp/102445)を参照してください。
-
-自分のMacでソースコードからビルドする場合は、以下の手順を使います。
-
-### ビルド環境の準備
-
-1. [Node.js](https://nodejs.org/ja/download) 22以降をインストールします。
-2. [uv](https://docs.astral.sh/uv/getting-started/installation/)と[Rust（rustup）](https://rust-lang.org/tools/install/)を、各公式手順に従ってインストールします。
-3. Mac App StoreからXcodeをインストールし、一度開いて初回設定を完了します。
-
-### ソースコードの取得
-
-```sh
-git clone https://github.com/uotian/ledad-app.git
-cd ledad-app
-```
-
-### 依存関係のインストール
-
-プロジェクトのルートで実行します。
-
-```sh
-npm ci
-```
-
-### 証明書の準備
-
-初回のみ、署名に使う開発用証明書を準備します。
-
-1. Xcodeを開き、「Settings」→「Accounts」で自分のApple Accountを追加します。
-2. 自分のTeamを選び、「Manage Certificates」を開きます。
-3. 「＋」→「Apple Development」を選び、証明書を作成します。
-
-証明書と秘密鍵はMacのログインキーチェーンに保存されます。次回以降のビルドでも同じ証明書を使います。
-
-### アプリをビルドする
-
-プロジェクトのルートでビルドします。
-
-```sh
-npm run app:build
-```
-
-`build/ledad.app`が作成されます。Finderから開いてください。
 
 ### APIキーの登録
 
@@ -98,6 +61,7 @@ OpenAI互換の接続先（`base_url`）を指定すると、文章・音声処�
 
 ## 注意点
 
+- このアプリは、Codexを使ったバイブコーディングで開発しています。
 - OpenAI・Gemini APIの利用料が発生します。画面の料金は概算です。
 - 会議データはMac内に保存します。音声・会話・資料などは、処理に応じて外部のAI APIへ送信します。
 - 聞き取りは30分後(設定で変更可)に自動停止します。「再開」で続けられます。
@@ -113,6 +77,4 @@ OpenAI互換の接続先（`base_url`）を指定すると、文章・音声処�
 
 ## ライセンス
 
-[MIT](LICENSE)。同梱フォント・アイコンには、それぞれの[フォント](public/licenses/Outfit-OFL.txt)・[アイコン](public/icons/providers/LICENSE)のライセンスが適用されます。
-
-このアプリは、Codexを使ったバイブコーディングで開発しています。
+[MIT](LICENSE)

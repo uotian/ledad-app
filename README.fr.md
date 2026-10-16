@@ -33,52 +33,15 @@ Next.js gère l’interface et la transmission audio en temps réel, tandis que 
 
 ## Installation
 
-Téléchargez le DMG pour Apple Silicon depuis [Releases](https://github.com/uotian/ledad-app/releases/latest), ouvrez-le et copiez `ledad.app` dans Applications. L’application incluse est signée avec Apple Development ; le DMG lui-même n’est ni signé ni notarié, et macOS peut bloquer l’ouverture de l’application.
+### Installer l’application
+
+1. Téléchargez le fichier `.dmg` pour Apple Silicon depuis [Releases](https://github.com/uotian/ledad-app/releases/latest).
+2. Ouvrez le DMG et faites glisser `ledad.app` dans le dossier Applications.
+3. Ouvrez `ledad.app` depuis Applications.
+
+L’application incluse est signée avec Apple Development ; le DMG lui-même n’est ni signé ni notarié, et macOS peut bloquer l’ouverture de l’application.
 
 Si macOS bloque cette application dont vous avez vérifié la provenance, fermez l’alerte, puis ouvrez **Réglages Système → Confidentialité et sécurité → Ouvrir quand même**. Consultez les [instructions Apple](https://support.apple.com/fr-fr/102445).
-
-Pour compiler depuis les sources sur votre Mac, suivez les étapes ci-dessous.
-
-### Préparer l’environnement de compilation
-
-1. Installez [Node.js](https://nodejs.org/fr/download) 22 ou ultérieur.
-2. Installez [uv](https://docs.astral.sh/uv/getting-started/installation/) et [Rust (rustup)](https://rust-lang.org/tools/install/) selon leurs instructions officielles.
-3. Installez Xcode depuis le Mac App Store, ouvrez-le et terminez sa configuration initiale.
-
-### Récupérer les sources
-
-```sh
-git clone https://github.com/uotian/ledad-app.git
-cd ledad-app
-```
-
-### Installer les dépendances
-
-À la racine du projet, exécutez :
-
-```sh
-npm ci
-```
-
-### Préparer un certificat de signature
-
-Avant la première compilation, préparez un certificat de développement :
-
-1. Dans Xcode, ouvrez Settings → Accounts et ajoutez votre compte Apple.
-2. Sélectionnez votre Team, puis ouvrez Manage Certificates.
-3. Cliquez sur « + » et créez un certificat Apple Development.
-
-Le certificat et sa clé privée sont stockés dans le trousseau de session du Mac et réutilisés pour les compilations suivantes.
-
-### Compiler l’application
-
-À la racine du projet, exécutez :
-
-```sh
-npm run app:build
-```
-
-L’application `build/ledad.app` est créée. Ouvrez-la dans le Finder.
 
 ### Enregistrer les clés API
 
@@ -98,6 +61,7 @@ Au premier démarrage d’une réunion, autorisez l’accès au micro et à l’
 
 ## Remarques
 
+- Cette application est développée en vibe coding avec Codex.
 - L’utilisation des API OpenAI et Gemini est facturée. Le coût affiché est une estimation.
 - Les données des réunions sont stockées sur votre Mac. L’audio, les conversations et les documents sont transmis aux API d’IA externes selon les traitements nécessaires.
 - L’écoute s’arrête automatiquement après 30 minutes par défaut (durée réglable). Choisissez Reprendre pour continuer.
@@ -113,6 +77,4 @@ Consultez l’[historique des versions](CHANGELOG.md).
 
 ## Licence
 
-[MIT](LICENSE). Les polices et icônes incluses conservent leurs licences respectives : [polices](public/licenses/Outfit-OFL.txt) et [icônes](public/icons/providers/LICENSE).
-
-Cette application est développée en vibe coding avec Codex.
+[MIT](LICENSE)

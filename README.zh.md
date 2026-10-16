@@ -33,52 +33,15 @@ Next.js 负责界面和实时音频传输，Python 负责会议数据管理和 A
 
 ## 安装
 
-从 [Releases](https://github.com/uotian/ledad-app/releases/latest) 下载 Apple Silicon 版 DMG，打开后将 `ledad.app` 复制到 Applications。内含应用使用 Apple Development 签名；DMG 本身未签名、未公证，macOS 可能会阻止应用启动。
+### 安装应用
+
+1. 从 [Releases](https://github.com/uotian/ledad-app/releases/latest) 下载 Apple Silicon 版 `.dmg` 文件。
+2. 打开 DMG，将 `ledad.app` 拖入“应用程序”文件夹。
+3. 从“应用程序”文件夹打开 `ledad.app`。
+
+内含应用使用 Apple Development 签名；DMG 本身未签名、未公证，macOS 可能会阻止应用启动。
 
 如果 macOS 阻止启动已确认来源的应用，请关闭警告，然后前往**系统设置 → 隐私与安全性 → 仍要打开**。[Apple 操作说明](https://support.apple.com/zh-cn/102445)。
-
-如需在自己的 Mac 上从源码构建，请按照以下步骤操作。
-
-### 准备构建环境
-
-1. 安装 [Node.js](https://nodejs.org/zh-cn/download) 22 或更高版本。
-2. 按照官方说明安装 [uv](https://docs.astral.sh/uv/getting-started/installation/) 和 [Rust（rustup）](https://rust-lang.org/tools/install/)。
-3. 从 Mac App Store 安装 Xcode，打开一次并完成初始设置。
-
-### 获取源码
-
-```sh
-git clone https://github.com/uotian/ledad-app.git
-cd ledad-app
-```
-
-### 安装依赖
-
-在项目根目录执行：
-
-```sh
-npm ci
-```
-
-### 准备签名证书
-
-首次构建前，需要准备开发签名证书：
-
-1. 打开 Xcode，进入 Settings → Accounts，添加你的 Apple 账户。
-2. 选择自己的 Team，然后打开 Manage Certificates。
-3. 点击“+”，创建 Apple Development 证书。
-
-证书和私钥保存在 Mac 的登录钥匙串中。之后的构建会继续使用同一证书。
-
-### 构建应用
-
-在项目根目录执行：
-
-```sh
-npm run app:build
-```
-
-生成的应用位于 `build/ledad.app`，请在 Finder 中打开。
 
 ### 注册 API 密钥
 
@@ -98,6 +61,7 @@ npm run app:build
 
 ## 注意事项
 
+- 本应用通过 Codex 进行氛围编程（vibe coding）开发。
 - 使用 OpenAI 和 Gemini API 会产生费用。界面显示的费用为估算值。
 - 会议数据保存在 Mac 本地。音频、对话和资料会根据处理需要发送到外部 AI API。
 - 默认听取 30 分钟后自动停止，可在设置中修改。点击“继续”即可恢复。
@@ -113,6 +77,4 @@ npm run app:build
 
 ## 许可证
 
-[MIT](LICENSE)。随附的字体和图标分别适用其[字体许可证](public/licenses/Outfit-OFL.txt)和[图标许可证](public/icons/providers/LICENSE)。
-
-本应用通过 Codex 进行氛围编程（vibe coding）开发。
+[MIT](LICENSE)
