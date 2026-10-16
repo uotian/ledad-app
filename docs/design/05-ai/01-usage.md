@@ -43,7 +43,7 @@ OpenAIの構造化応答は、出力が不正でも取得できた使用量を�
 | `operation`                                    | 用途                                                            |
 | ---------------------------------------------- | --------------------------------------------------------------- |
 | `document_preparation`                         | [Document](10-document.md)                                      |
-| `live_token`, `live_transcription`             | [Gemini Live](21-live-gemini.md)のトークン発行／接続            |
+| `live_token`, `live_transcription`             | [Gemini Live](21-live-gemini.md) / [OpenAI Live](27-live-openai.md)のトークン発行／接続            |
 | `file_transcription`                           | [OpenAI Fix](23-fix-openai.md) / [Gemini Fix](24-fix-gemini.md) |
 | `transcript_preview`                           | [Live翻訳](25-live-translate.md)                                |
 | `transcript_translation`                       | [確定翻訳](26-transcript-translate.md)                          |
@@ -57,8 +57,10 @@ OpenAIの構造化応答は、出力が不正でも取得できた使用量を�
 
 画面では音声認識を`LiveSTT / FixSTT`、音声読み上げを`TTS`と表示します。旧方式の`candidate_confirmation`は過去の確認訳生成履歴として表示を維持します。現在のAskは一度の生成で発話文と確認訳を返します。
 
-Gemini Liveは5秒ごとと接続終了時に状態・累積音声秒数・報告を保存します。受信メッセージはバイナリを除いて最大2,000件かつ合計2,000,000文字までAPI詳細へ保持し、超過は`liveMessagesTruncated`で示します。usage metadataの報告値を接続全体の請求トークン数と見なして加算しません。
+Gemini / OpenAI Liveは5秒ごとと接続終了時に状態・累積音声秒数・報告を保存します。受信メッセージはバイナリを除いて最大2,000件かつ合計2,000,000文字までAPI詳細へ保持し、超過は`liveMessagesTruncated`で示します。usage metadataの報告値を接続全体の請求トークン数と見なして加算しません。
 
 実装：[UsageRecord・保存](../../../backend/ledad/storage/usage.py)、[本文マスク](../../../backend/ledad/storage/api_details.py)、[LiveUsage](../../../src/lib/audio/live-usage.ts)、[処理名の表示順](../../../src/lib/usage/operations.ts)。
 
 [@You](35-mentions.md)は`meeting_analyze`へ統合しました。旧`mention_detection`（Decisions）と`meeting_mentions`（Responses）の利用履歴は維持します。過去のDecisions記録は入力のみ課金し、通常Lunaの出力・キャッシュ単価を適用しません。
+
+OpenAI TTSはSSE完了イベントの実使用量から料金を計算します。旧会議で不足する単価の補完と、使用量がない旧履歴の扱いは[TTS](33-tts.md)を参照してください。

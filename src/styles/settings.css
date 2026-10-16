@@ -24,11 +24,6 @@
   outline: none;
   background: var(--accent-soft);
 }
-.settings-description {
-  font-size: calc(11px * var(--text-scale, 1));
-  color: var(--muted);
-  margin-bottom: 23px;
-}
 .settings-dialog .field {
   position: relative;
   margin-bottom: 18px;
@@ -55,15 +50,30 @@
   font-size: calc(9px * var(--text-scale, 1));
 }
 .settings-models {
+  margin-bottom: 24px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-tint);
   padding: 14px;
 }
-.settings-models > strong {
+.settings-models-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   font-size: calc(10px * var(--text-scale, 1));
-  color: var(--muted);
-  font-weight: 500;
+}
+.settings-models-heading label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  cursor: pointer;
+}
+.settings-models-heading > strong {
+  font-size: calc(13px * var(--text-scale, 1));
+  font-weight: 600;
 }
 .settings-models dl {
   display: grid;
@@ -118,8 +128,7 @@
   padding: 0;
   margin: 26px 0;
 }
-.appearance-settings legend,
-.settings-section-title {
+.appearance-settings legend {
   font-size: calc(13px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--ink);
@@ -180,7 +189,19 @@
   color: var(--ink);
   border-bottom-color: var(--accent);
 }
-.settings-tabs + .settings-section-title,
 .settings-tabs + .field {
   margin-top: 22px;
+}
+
+.settings-connection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.settings-connection input {
+  min-width: 0;
+  flex: 1;
+}
+.settings-connection .button {
+  flex-shrink: 0;
 }

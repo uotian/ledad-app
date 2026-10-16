@@ -33,6 +33,7 @@ async def create(service, mode="audience"):
 
 @pytest.mark.parametrize("legacy_profile", [False, True])
 async def test_profile_names_are_not_sent_as_transcription_hints(service, legacy_profile):
+    service.config.save_mode("gemini")
     data = await create(service)
     extra = {"profile": {"name": "ポケカメン kimono コレコレ", "aliases": ""}} if legacy_profile else {}
     service.gemini.live_token = AsyncMock(return_value={"token": "test"})
@@ -492,6 +493,7 @@ async def test_live_usage_only_updates_own_running_record(service):
 
 
 async def test_credentials_never_returned(service):
+    service.config.save_mode("gemini")
     service.config.openai_key = "sk-test-secret"
     service.config.stt_model = "test-live"
     service.config.fix_stt_model = "test-fixed"
@@ -520,6 +522,7 @@ async def test_refinement_provider_persists_and_rejects_unknown_values(service):
     from ledad.config import Config
 
     assert (await request(service, "/api/config")).value["refinementProvider"] == "openai"
+    service.config.save_mode("gemini")
     for provider, model in [("gemini", "gemini-3.5-transcribe"), ("openai", "gpt-transcribe")]:
         result = await request(service, "/api/config", "PUT", {"provider": provider})
         assert result.status == 200
@@ -533,14 +536,15 @@ async def test_refinement_provider_persists_and_rejects_unknown_values(service):
 async def test_live_provider_persists_and_keeps_fixed_choice(service):
     from ledad.config import Config
 
+    service.config.save_mode("gemini")
     service.config.save_refinement_provider("gemini")
-    for provider, model in [("apple", "Apple SpeechTranscriber"), ("gemini", service.config.stt_model)]:
+    for provider, model in [("apple", "Apple SpeechTranscriber"), ("gemini", service.config.stt_model), ("openai", service.config.openai_live_stt_model)]:
         result = await request(service, "/api/live-settings", "PUT", {"provider": provider})
         assert result.status == 200
         assert result.value["models"]["transcription"] == model
         assert result.value["refinementProvider"] == "gemini"
         assert Config(service.config.data_dir).public()["liveProvider"] == provider
-    for invalid in ["openai", "invalid", None, 1]:
+    for invalid in ["invalid", None, 1]:
         assert (await request(service, "/api/live-settings", "PUT", {"provider": invalid})).status == 400
 
 
@@ -1033,6 +1037,7 @@ async def test_legacy_documents_remain_local_until_explicit_shared_preparation(s
 
 
 async def test_live_token_receives_only_glossary_terms(service, document, reference):
+    service.config.save_mode("gemini")
     session = service.sessions.create()
     session.documents = [document]
     session.document_reference = reference
@@ -1060,3 +1065,86 @@ async def test_usage_returns_record_cost_from_meeting_snapshot(service):
     record.model = "unknown-model"
     service.usage.save(record)
     assert (await request(service, path)).value[0]["yen"] is None
+
+
+@pytest.mark.parametrize("voice", ["marin", "cedar", "Kore", "Aoede", "Puck", "Charon"])
+async def test_speech_routes_by_selected_voice(service, voice):
+    session = await create(service)
+    service.ai.provider.speech = AsyncMock(return_value=(b"openai", "audio/wav"))
+    service.gemini.speech = AsyncMock(return_value=(b"gemini", "audio/wav"))
+    result = await request(service, "/api/speech", "POST", {
+        "sessionId": session["id"], "text": "Hello", "language": "en", "voice": voice,
+    })
+    assert result.status == 200
+    is_openai = voice in ("marin", "cedar")
+    assert result.value == (b"openai" if is_openai else b"gemini")
+    selected = service.ai.provider if is_openai else service.gemini
+    other = service.gemini if is_openai else service.ai.provider
+    selected.speech.assert_awaited_once_with(session["id"], "Hello", "en", voice)
+    other.speech.assert_not_awaited()
+
+
+async def test_speech_rejects_unknown_voice_before_provider_call(service):
+    session = await create(service)
+    service.ai.provider.speech = AsyncMock()
+    service.gemini.speech = AsyncMock()
+    result = await request(service, "/api/speech", "POST", {
+        "sessionId": session["id"], "text": "Hello", "language": "en", "voice": "unknown",
+    })
+    assert result.status == 400
+    service.ai.provider.speech.assert_not_awaited()
+    service.gemini.speech.assert_not_awaited()
+
+
+async def test_openai_speech_cost_in_existing_meeting_history(service):
+    from ledad.meeting.pricing import create_pricing_snapshot
+
+    session = service.sessions.create()
+    session.pricing = create_pricing_snapshot()
+    session.pricing.rates = [r for r in session.pricing.rates if r.model != 'gpt-4o-mini-tts']
+    service.sessions.save(session)
+    async with service.usage.measured('openai', 'speech', 'gpt-4o-mini-tts', session.id) as record:
+        record.input_tokens = 50
+        record.output_tokens = 25
+        record.total_tokens = 75
+    history = await request(service, f'/api/sessions/{session.id}/usage')
+    total = await request(service, f'/api/sessions/{session.id}/cost')
+    assert history.status == total.status == 200
+    assert history.value[0]['yen'] > 0
+    assert total.value['openai']['yen'] == history.value[0]['yen']
+    assert not total.value['openai']['incomplete']
+
+
+async def test_ai_mode_api_restricts_and_restores_settings(service):
+    assert (await request(service, "/api/config")).value["aiMode"] == "openai"
+    assert (await request(service, "/api/config", "PUT", {"provider": "gemini"})).status == 400
+    assert (await request(service, "/api/live-settings", "PUT", {"provider": "gemini"})).status == 400
+    for invalid in ["invalid", None, 1]:
+        assert (await request(service, "/api/ai-settings", "PUT", {"mode": invalid})).status == 400
+    response = await request(service, "/api/ai-settings", "PUT", {"mode": "gemini"})
+    assert response.status == 200
+    assert response.value["liveProvider"] == "gemini"
+    assert response.value["refinementProvider"] == "openai"
+    assert (await request(service, "/api/config", "PUT", {"provider": "gemini"})).status == 200
+    await request(service, "/api/ai-settings", "PUT", {"mode": "openai"})
+    assert service.config.refinement_provider() == "openai"
+    response = await request(service, "/api/ai-settings", "PUT", {"mode": "gemini"})
+    assert response.value["refinementProvider"] == "gemini"
+
+
+async def test_custom_endpoint_blocks_cloud_live_and_gemini_speech(service):
+    session = await create(service)
+    result = await request(service, '/api/connection-settings', 'PUT', {'baseUrl': 'https://gateway.example/v1'})
+    assert result.status == 200
+    assert result.value['liveProvider'] == 'apple'
+    service.ai.provider.live_token = AsyncMock()
+    service.gemini.live_token = AsyncMock()
+    service.gemini.speech = AsyncMock()
+    for provider in ['openai', 'gemini']:
+        result = await request(service, '/api/live-token', 'POST', {'sessionId': session['id'], 'provider': provider})
+        assert result.status == 400
+    result = await request(service, '/api/speech', 'POST', {'sessionId': session['id'], 'text': 'Hello', 'language': 'en', 'voice': 'Kore'})
+    assert result.status == 400
+    service.ai.provider.live_token.assert_not_called()
+    service.gemini.live_token.assert_not_called()
+    service.gemini.speech.assert_not_called()

@@ -126,7 +126,7 @@ it('初回接続・接続更新ともに、認識に使わない名前設定を�
   await vi.advanceTimersByTimeAsync(9 * minute + 1500);
   expect(tokens()).toHaveLength(2);
   for (const [, options] of tokens())
-    expect(JSON.parse(options.body)).toEqual({ sessionId: 'meeting-id' });
+    expect(JSON.parse(options.body)).toEqual({ sessionId: 'meeting-id', provider: 'gemini' });
 });
 
 it('9分で更新し、更新中のPCMを順序と収録時刻を保って一度だけ新接続に送る', async () => {

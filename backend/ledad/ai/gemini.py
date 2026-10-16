@@ -30,6 +30,8 @@ class GeminiProvider:
         self.config, self.usage = config, usage
 
     def client(self):
+        if self.config.base_url():
+            raise AppError("カスタム接続先の使用中はGeminiを利用できません。")
         if not self.config.gemini_key:
             raise AppError("設定からGemini APIキーを登録してください。")
         return genai.Client(

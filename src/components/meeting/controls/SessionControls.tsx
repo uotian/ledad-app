@@ -17,6 +17,7 @@ export default function SessionControls({
   documentsUpdating: boolean;
 }) {
   const { t } = useI18n();
+  const languageLabels = { ja: '日本語', en: '英語', zh: '中国語', fr: 'フランス語' } as const;
   const ended = session.status === 'ended' || !!session.minutes;
   const listening = ['listening', 'connecting', 'updating'].includes(meeting.listening);
   const busy = meeting.ending || meeting.starting || meeting.stoppingListening;
@@ -76,6 +77,10 @@ export default function SessionControls({
           </div>
         </div>
       </div>
+      <span className="session-language-direction">
+        {t(languageLabels[session.settings.language])} →{' '}
+        {t(languageLabels[meeting.translationLanguage])}
+      </span>
       {ended ? (
         <div className="listening-controls">
           <Button small onClick={onRecords} disabled={busy}>

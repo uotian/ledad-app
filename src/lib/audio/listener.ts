@@ -1,5 +1,6 @@
 import { ReviewBuffer, type AudioReview, type ReviewProgress } from './review-buffer';
 import { TranscriptClock } from './transcript-clock';
+import { OpenAILiveTranscription } from './openai-live-transcription';
 import { LiveTranscription } from './live-transcription';
 import type { LiveServerMessage } from '@google/genai';
 import type { Settings } from '@/lib/session/schema';
@@ -26,7 +27,7 @@ export class MeetingListener {
   private clock = new TranscriptClock();
   private streams: MediaStream[] = [];
   private context?: AudioContext;
-  private connection?: LiveTranscription;
+  private connection?: LiveTranscription | OpenAILiveTranscription;
   private worklet?: AudioWorkletNode;
   private native?: NativeCapture;
   private appleEpoch?: number;
@@ -38,7 +39,12 @@ export class MeetingListener {
   constructor(private callbacks: Callbacks) {}
   async start(settings: Settings, sessionId: string) {
     // 明示的な再開でも、前の区間の録音再認識・翻訳は最後まで完了させる。
-    if (this.nativeNeedsFinish || this.finishing) await this.stop();
+    if (
+      this.nativeNeedsFinish ||
+      this.finishing ||
+      this.connection instanceof OpenAILiveTranscription
+    )
+      await this.stop();
     else void this.stop();
     const generation = this.generation;
     // 音声機器を使わない操作テスト専用。本番ビルドでは必ず取得処理へ進みます。
@@ -54,11 +60,14 @@ export class MeetingListener {
     this.createReview(settings.fixIntervalSeconds);
     this.callbacks.onStatus('connecting');
     try {
-      const { liveProvider } = await api<{ liveProvider: 'gemini' | 'apple' }>('/api/config');
+      const { liveProvider } = await api<{ liveProvider: 'gemini' | 'apple' | 'openai' }>(
+        '/api/config',
+      );
       if (liveProvider === 'apple' && !isDesktop())
         throw new Error('Apple SpeechTranscriberはMacアプリで利用してください。');
       if (isDesktop()) {
-        if (liveProvider !== 'apple') await this.connect(settings, sessionId, generation);
+        if (liveProvider !== 'apple')
+          await this.connect(settings, sessionId, generation, liveProvider);
         if (generation !== this.generation) return;
         const native = new NativeCapture();
         this.native = native;
@@ -145,7 +154,7 @@ export class MeetingListener {
       this.context = context;
       await context.resume();
       if (generation !== this.generation) return;
-      await this.connect(settings, sessionId, generation);
+      await this.connect(settings, sessionId, generation, liveProvider);
       if (generation !== this.generation) return;
       await context.audioWorklet.addModule('/audio/pcm-processor.js');
       if (generation !== this.generation) return;
@@ -231,12 +240,14 @@ export class MeetingListener {
     this.reviewProgressKey = key;
     this.callbacks.onReviewProgress?.(progress);
   }
-  private async connect(settings: Settings, sessionId: string, generation: number) {
-    const connection = new LiveTranscription(sessionId, {
-      onMessage: (message) => {
-        if (generation === this.generation) this.receiveTranscript(message);
-      },
-      onAudio: (pcm, capturedAt) => {
+  private async connect(
+    settings: Settings,
+    sessionId: string,
+    generation: number,
+    provider: string,
+  ) {
+    const callbacks = {
+      onAudio: (pcm: Uint8Array, capturedAt: number) => {
         this.review?.append(pcm, capturedAt);
         this.publishReviewProgress();
         this.clock.audioSent(pcm.length, capturedAt);
@@ -247,8 +258,9 @@ export class MeetingListener {
         this.clock.reset();
         this.createReview(settings.fixIntervalSeconds);
       },
-      onUpdating: (updating) => this.callbacks.onStatus(updating ? 'updating' : 'listening'),
-      onError: (message) => this.fail(message),
+      onUpdating: (updating: boolean) =>
+        this.callbacks.onStatus(updating ? 'updating' : 'listening'),
+      onError: (message: string) => this.fail(message),
       onUsageError: () =>
         this.callbacks.onError(
           '聞き取りの利用記録を保存できませんでした。次の保存時に再試行します。',
@@ -259,7 +271,35 @@ export class MeetingListener {
           '設定した時間に達したため、聞き取りを自動停止しました。続ける場合は「再開」を押してください。',
         );
       },
-    });
+    };
+    const connection =
+      provider === 'openai'
+        ? new OpenAILiveTranscription(sessionId, settings.vadSilenceMs, {
+            ...callbacks,
+            onWarning: (message) => this.callbacks.onError(message),
+            onText: (text, timestamp, end) => {
+              if (generation !== this.generation) return;
+              this.interim = '';
+              this.callbacks.onInterim('');
+              if (text) {
+                const id = this.callbacks.onText(text, timestamp, true);
+                this.review?.record(id || null, timestamp);
+                this.review?.boundary(`${end}s`);
+                this.publishReviewProgress();
+              }
+            },
+            onInterim: (text, timestamp) => {
+              if (generation !== this.generation) return;
+              this.interim = text;
+              this.callbacks.onInterim(text, timestamp);
+            },
+          })
+        : new LiveTranscription(sessionId, {
+            ...callbacks,
+            onMessage: (message) => {
+              if (generation === this.generation) this.receiveTranscript(message);
+            },
+          });
     this.connection = connection;
     await connection.start(settings.listeningLimitMinutes);
   }
@@ -347,19 +387,25 @@ export class MeetingListener {
   }
   stop(flush = true) {
     if (flush && this.finishing) return this.finishing;
-    if (flush && this.nativeNeedsFinish && this.native) {
+    if (
+      flush &&
+      ((this.nativeNeedsFinish && this.native) ||
+        this.connection instanceof OpenAILiveTranscription)
+    ) {
       this.nativeNeedsFinish = false;
       clearTimeout(this.appleLimitTimer);
       const generation = this.generation;
-      const finishing = this.native
-        .finish()
+      const nativeFinish = this.native?.finish() ?? Promise.resolve();
+      const finishing = nativeFinish
         .catch((error) => {
           if (generation === this.generation)
             this.callbacks.onError(
               error instanceof Error ? error.message : '音声の終了処理に失敗しました。',
             );
         })
-        .then(() => {
+        .then(async () => {
+          if (generation !== this.generation) return;
+          if (this.connection instanceof OpenAILiveTranscription) await this.connection.finish();
           if (generation === this.generation) return this.stopNow(true);
         })
         .finally(() => {

@@ -74,16 +74,16 @@ test('使わなかった Live 翻訳は成功とトークンを残して不利�
     const providers = page.getByRole('group', { name: 'API提供元' });
     await expect(providers.getByRole('button')).toHaveCount(2);
     await expect(providers.getByRole('button')).toHaveText([
-      'OpenAI(1件/0.4円)',
-      'Gemini(1件/2.5円)',
+      'OpenAI (1件/0.4円)',
+      'Gemini (1件/2.5円)',
     ]);
     await expect(
-      providers.getByRole('button', { name: 'OpenAI(1件/0.4円)', exact: true }),
+      providers.getByRole('button', { name: 'OpenAI (1件/0.4円)', exact: true }),
     ).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('tbody tr')).toHaveCount(1);
     await expect(page.locator('tbody')).toContainText('test-model');
-    await page.getByRole('button', { name: 'Live翻訳(1件/0.4円)', exact: true }).click();
-    await providers.getByRole('button', { name: 'Gemini(1件/2.5円)', exact: true }).click();
+    await page.getByRole('button', { name: 'Live翻訳 (1件/0.4円)', exact: true }).click();
+    await providers.getByRole('button', { name: 'Gemini (1件/2.5円)', exact: true }).click();
     await expect(page.locator('tbody tr')).toHaveCount(1);
     await expect(page.locator('tbody')).toContainText('gemini-test');
     await expect(page.getByRole('button', { name: /^全て/ })).toHaveAttribute(
@@ -95,7 +95,7 @@ test('使わなかった Live 翻訳は成功とトークンを残して不利�
       'https://aistudio.google.com/billing',
     );
     await expect(page.getByRole('link', { name: 'OpenAIのAPI課金画面を開く' })).toHaveCount(0);
-    await providers.getByRole('button', { name: 'OpenAI(1件/0.4円)', exact: true }).click();
+    await providers.getByRole('button', { name: 'OpenAI (1件/0.4円)', exact: true }).click();
     await expect(page.locator('tbody tr')).toHaveCount(1);
     const billing = page.getByRole('link', { name: 'OpenAIのAPI課金画面を開く' });
     await expect(billing).toHaveAttribute(
@@ -139,8 +139,8 @@ test('使わなかった Live 翻訳は成功とトークンを残して不利�
     await expect(row).toContainText('17');
     const filters = page.getByRole('group', { name: '処理', exact: true });
     await expect(filters.getByRole('button', { name: /^全て/ })).toContainText('1件/0.4円');
-    await filters.getByRole('button', { name: 'Live翻訳(1件/0.4円)' }).click();
-    await expect(filters.getByRole('button', { name: 'Live翻訳(1件/0.4円)' })).toHaveAttribute(
+    await filters.getByRole('button', { name: 'Live翻訳 (1件/0.4円)' }).click();
+    await expect(filters.getByRole('button', { name: 'Live翻訳 (1件/0.4円)' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -159,17 +159,17 @@ test('使わなかった Live 翻訳は成功とトークンを残して不利�
     await page.mouse.click(2, 2);
     await expect(page.getByRole('dialog')).not.toBeVisible();
     await trigger.click();
-    await providers.getByRole('button', { name: 'Gemini(1件/2.5円)', exact: true }).click();
+    await providers.getByRole('button', { name: 'Gemini (1件/2.5円)', exact: true }).click();
     await page.getByRole('button', { name: '閉じる', exact: true }).click();
     await trigger.click();
     await expect(
-      providers.getByRole('button', { name: 'OpenAI(1件/0.4円)', exact: true }),
+      providers.getByRole('button', { name: 'OpenAI (1件/0.4円)', exact: true }),
     ).toHaveAttribute('aria-pressed', 'true');
     for (const width of [1440, 980, 390]) {
       await page.setViewportSize({ width, height: 960 });
       await expect(billing).toBeInViewport();
       await expect(
-        providers.getByRole('button', { name: 'Gemini(1件/2.5円)', exact: true }),
+        providers.getByRole('button', { name: 'Gemini (1件/2.5円)', exact: true }),
       ).toBeInViewport();
       await page.screenshot({ path: `artifacts/usage-provider-${width}.png` });
     }

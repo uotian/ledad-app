@@ -116,7 +116,7 @@ export const settingsSchema = z.object({
     (value) => (value === 'manual' ? 'microphone' : value),
     z.enum(['microphone', 'display', 'mixed']),
   ),
-  voice: z.enum(['Kore', 'Puck', 'Aoede', 'Charon']),
+  voice: z.enum(['Kore', 'Puck', 'Aoede', 'Charon', 'marin', 'cedar']),
 
   vadSilenceMs: z
     .union([z.literal(50), z.literal(100), z.literal(200), z.literal(300), z.literal(500)])

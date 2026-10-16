@@ -1,7 +1,8 @@
 import type { Settings, Utterance } from '@/lib/session/schema';
 import { splitSpeech } from '@/lib/audio/speech';
 import { serviceFetch } from '@/lib/desktop';
-import { readVoice } from '@/components/settings/voice';
+import { api } from '@/lib/api';
+import { readVoice, type AIMode } from '@/components/settings/voice';
 export type SpeakingStatus = 'idle' | 'loading' | 'speaking' | 'paused';
 type Job = {
   record: Utterance;
@@ -11,6 +12,7 @@ type Job = {
   url: string | null;
   elapsed: number;
   settings: Settings;
+  voiceResolved: boolean;
 };
 type Callbacks = {
   onStatus: (status: SpeakingStatus) => void;
@@ -71,7 +73,8 @@ export class MeetingSpeaker {
       audio: null,
       url: null,
       elapsed: 0,
-      settings: { ...settings, voice: readVoice() ?? settings.voice },
+      settings: { ...settings },
+      voiceResolved: false,
     };
     this.current = job;
     this.callbacks.onRecord({ ...job.record });
@@ -81,6 +84,15 @@ export class MeetingSpeaker {
     const generation = ++this.generation;
     this.controller = new AbortController();
     try {
+      if (!job.voiceResolved) {
+        this.statusChange('loading');
+        const config = await api<{ aiMode: AIMode }>('/api/config', {
+          signal: this.controller.signal,
+        });
+        if (generation !== this.generation || this.current !== job) return;
+        job.settings.voice = readVoice(config.aiMode) ?? job.settings.voice;
+        job.voiceResolved = true;
+      }
       const part = job.parts[job.index];
       if (!part) return;
       if (!job.audio) {

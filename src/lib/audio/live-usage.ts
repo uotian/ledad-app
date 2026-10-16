@@ -1,4 +1,4 @@
-import type { LiveServerMessage, UsageMetadata } from '@google/genai';
+import type { UsageMetadata } from '@google/genai';
 import { api } from '@/lib/api';
 type Status = 'running' | 'completed' | 'failed' | 'cancelled';
 type LiveReport = {
@@ -34,7 +34,7 @@ export class LiveUsage {
       totalTokens: usage.totalTokenCount ?? null,
     });
   }
-  message(message: LiveServerMessage) {
+  message(message: unknown) {
     const json = JSON.stringify(message, (key, value) =>
       key === 'data' && typeof value === 'string'
         ? { omitted: 'binary', encodedCharacters: value.length }

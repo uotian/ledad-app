@@ -7,17 +7,14 @@ export default function FixProgress({ progress }: { progress: ReviewProgress }) 
   if (progress.state === 'idle') return null;
   const text =
     progress.state === 'processing'
-      ? t('Fix聞き取りの処理中')
+      ? t('Fix処理中')
       : progress.state === 'boundary'
-        ? t('Fix聞き取りの区切り待ち')
-        : t(
-            progress.state === 'context'
-              ? 'Fix追加音声取得中（あと約{seconds}秒）'
-              : 'Fix聞き取り中（あと約{seconds}秒）',
-            {
+        ? t('Fix区切り待ち')
+        : progress.state === 'context'
+          ? t('Fix聞き取り中（−{seconds}秒）', { seconds: progress.elapsedSeconds })
+          : t('Fix聞き取り中（あと約{seconds}秒）', {
               seconds: progress.remainingSeconds,
-            },
-          );
+            });
   return (
     <span className={styles.progress} data-fix-state={progress.state} aria-live="off">
       {text}

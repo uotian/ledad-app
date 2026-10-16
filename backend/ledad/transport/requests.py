@@ -29,12 +29,20 @@ class CreateSession(Model):
     title: str | None = Field(default=None, max_length=120)
 
 
+class ConnectionSettings(Model):
+    base_url: str = Field(max_length=2048)
+
+
+class AIModeSettings(Model):
+    mode: Literal["openai", "gemini"]
+
+
 class RefinementSettings(Model):
     provider: Literal["openai", "gemini"]
 
 
 class LiveSettings(Model):
-    provider: Literal["gemini", "apple"]
+    provider: Literal["gemini", "apple", "openai"]
 
 
 class Profile(Model):
@@ -51,13 +59,14 @@ class Profile(Model):
 
 class LiveToken(Model):
     session_id: Id
+    provider: Literal["gemini", "openai"] | None = None
 
 
 class Speech(Model):
     session_id: Id
     text: str = Field(min_length=1, max_length=4000)
     language: Language
-    voice: Literal["Kore", "Puck", "Aoede", "Charon"]
+    voice: Literal["Kore", "Puck", "Aoede", "Charon", "marin", "cedar"]
 
 
 class Consultation(Model):

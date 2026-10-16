@@ -96,10 +96,13 @@ it('約1分の区間の前後5秒を重ね、後方音声が届くまでは送�
   expect(buffer.progress).toEqual({ state: 'boundary' });
   buffer.record('first', stamp(0));
   buffer.boundary('60s');
-  expect(buffer.progress).toEqual({ state: 'context', remainingSeconds: 5 });
+  expect(buffer.progress).toEqual({ state: 'context', elapsedSeconds: 1 });
   expect(reviews).toHaveLength(0);
-  append(4, 2);
-  expect(buffer.progress).toEqual({ state: 'context', remainingSeconds: 1 });
+  for (let elapsedSeconds = 2; elapsedSeconds <= 5; elapsedSeconds++) {
+    append(1, 2);
+    expect(buffer.progress).toEqual({ state: 'context', elapsedSeconds });
+    expect(reviews).toHaveLength(0);
+  }
   expect(reviews).toHaveLength(0);
   append(1, 2);
   expect(buffer.progress).toEqual({ state: 'collecting', remainingSeconds: 55 });

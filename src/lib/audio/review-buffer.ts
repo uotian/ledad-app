@@ -3,7 +3,8 @@ export type ReviewProgress =
   | { state: 'idle' }
   | { state: 'boundary' }
   | { state: 'processing' }
-  | { state: 'collecting' | 'context'; remainingSeconds: number };
+  | { state: 'collecting'; remainingSeconds: number }
+  | { state: 'context'; elapsedSeconds: number };
 const bytesPerSecond = 32_000;
 // 前後に重ねる文脈の長さは、Fix間隔とは別に保つ。
 const defaultContextSeconds = 5;
@@ -35,15 +36,20 @@ export class ReviewBuffer {
     if (this.pending.length)
       return {
         state: 'context',
-        remainingSeconds: Math.max(
-          0,
-          Math.ceil((this.pending[0].to - this.total) / bytesPerSecond),
+        elapsedSeconds: Math.max(
+          1,
+          Math.floor((this.total - (this.pending[0].to - this.contextBytes)) / bytesPerSecond) + 1,
         ),
       };
     const remainingSeconds = Math.ceil(
       (this.intervalSeconds * bytesPerSecond - (this.total - this.start)) / bytesPerSecond,
     );
-    return remainingSeconds > 0 ? { state: 'collecting', remainingSeconds } : { state: 'boundary' };
+    return remainingSeconds > 0
+      ? {
+          state: 'collecting',
+          remainingSeconds,
+        }
+      : { state: 'boundary' };
   }
   append(pcm: Uint8Array, capturedAt = Date.now()) {
     this.epoch ??= capturedAt - pcm.length / 32;

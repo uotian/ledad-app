@@ -10,18 +10,21 @@
 | ----------------------------------------------------- | --------------------------------------- | ---------------------------------- |
 | [01 Usage](01-usage.md)                               | 全処理共通の利用記録・API詳細・概算料金 | 外部APIの台帳                      |
 | [10 Document](10-document.md)                         | 全資料から参照文・用語集を生成          | OpenAI `gpt-6-luna`固定            |
-| [20 Transcribe / Transcript](20-transcribe.md)        | 音声認識と翻訳の全体像                  | 以下の21〜26                       |
+| [20 Transcribe / Transcript](20-transcribe.md)        | 音声認識と翻訳の全体像                  | 以下の21〜27                       |
 | [21 Live / Gemini](21-live-gemini.md)                 | ストリーミング認識                      | `gemini-3.5-transcribe-live`       |
 | [22 Live / Apple](22-live-apple.md)                   | 端末内認識                              | Apple SpeechTranscriber            |
 | [23 Fix / OpenAI](23-fix-openai.md)                   | 録音の再認識                            | `gpt-transcribe`                   |
 | [24 Fix / Gemini](24-fix-gemini.md)                   | 録音の再認識                            | `gemini-3.5-transcribe`            |
 | [25 Live Translate](25-live-translate.md)             | 途中の発言の翻訳                        | OpenAI `gpt-6-luna`                |
 | [26 Transcript Translate](26-transcript-translate.md) | 確定発言・Fix後の翻訳                   | OpenAI `gpt-6-luna`                |
+| [27 Live / OpenAI](27-live-openai.md) | ストリーミング認識 | `gpt-live-transcribe` |
 | [30 Analyze](30-analyze.md)                           | Topics・@You・Chat/Ask入力候補           | OpenAI `gpt-6-luna`                |
 | [31 Chat](31-chat.md)                                 | 本人への私的な相談回答                  | OpenAI `gpt-6.1-sol`               |
 | [32 Ask](32-ask.md)                                   | 会議相手に話す文の下書き・確認訳        | OpenAI `gpt-6-luna`                |
-| [33 TTS](33-tts.md)                                   | 発言文の読み上げ                        | Gemini `gemini-3.8-flash-lite-tts` |
+| [33 TTS](33-tts.md)                                   | 発言文の読み上げ                        | OpenAI `gpt-4o-mini-tts` / Gemini `gemini-3.8-flash-lite-tts` |
 | [34 Summarize](34-summarize.md)                       | 終了後の議事録・要約                    | OpenAI `gpt-6-luna`                |
+
+カスタム接続先の経路・制約・適用タイミングは[AI接続先](02-connection.md)を参照してください。
 
 ## AIの実行場所と接続経路
 
@@ -30,6 +33,7 @@ AI処理には、外部APIで実行するものと、端末内で実行するも
 | 処理            | 実行場所・接続経路                                                                                       |
 | --------------- | -------------------------------------------------------------------------------------------------------- |
 | Gemini Live STT | BackendのPythonが制約付き一時トークンを発行し、FrontendのJavaScriptがWebSocketでGeminiへ直接接続します。 |
+| OpenAI Live STT | Backendが一時キーを発行し、FrontendがWebSocketで直接接続します。[詳細](27-live-openai.md)。 |
 | Apple Live STT  | NativeのSwiftからApple SpeechTranscriberを使い、端末内で音声認識します。                                 |
 | その他のAI処理  | BackendのPythonからOpenAI・Geminiの外部APIへ問い合わせます。                                             |
 

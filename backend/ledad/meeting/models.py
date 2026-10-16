@@ -158,7 +158,7 @@ class Settings(Model):
     language: Language
     translation_language: Language | None = None
     input: Literal["microphone", "display", "mixed"]
-    voice: Literal["Kore", "Puck", "Aoede", "Charon"]
+    voice: Literal["Kore", "Puck", "Aoede", "Charon", "marin", "cedar"]
     vad_silence_ms: Literal[50, 100, 200, 300, 500] = 100
     fix_interval_seconds: Literal[15, 30, 60, 120] = 30
     listening_limit_minutes: Literal[10, 30, 60, 90] = 30

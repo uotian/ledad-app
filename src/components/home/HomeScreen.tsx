@@ -36,7 +36,11 @@ export default function HomeScreen({
   const [uploading, setUploading] = useState(false);
   const documents = useRef<HTMLDetailsElement>(null);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
-  const [ready, setReady] = useState<{ openai: boolean; gemini: boolean } | null>(null);
+  const [ready, setReady] = useState<{
+    openai: boolean;
+    gemini: boolean;
+    aiMode: 'openai' | 'gemini';
+  } | null>(null);
   const [error, setError] = useState('');
   const busy = meeting.starting || uploading;
   const [deleting, setDeleting] = useState(false);
@@ -52,7 +56,7 @@ export default function HomeScreen({
         if (active) setSessions(value);
       })
       .catch(fail);
-    void api<{ openai: boolean; gemini: boolean }>('/api/config')
+    void api<{ openai: boolean; gemini: boolean; aiMode: 'openai' | 'gemini' }>('/api/config')
       .then((value) => {
         if (active) setReady(value);
       })
@@ -116,7 +120,9 @@ export default function HomeScreen({
           initialTab="keys"
           onClose={() => setSettingsOpen(false)}
           onSaved={() => {
-            void api<{ openai: boolean; gemini: boolean }>('/api/config')
+            void api<{ openai: boolean; gemini: boolean; aiMode: 'openai' | 'gemini' }>(
+              '/api/config',
+            )
               .then(setReady)
               .catch((e) => setError(e.message));
           }}
@@ -135,11 +141,11 @@ export default function HomeScreen({
           aria-label={t('AI接続設定を開く')}
         >
           <span
-            className={`status-dot ${ready?.openai && ready?.gemini ? '' : 'status-dot-muted'}`}
+            className={`status-dot ${ready?.openai && (ready.aiMode === 'openai' || ready.gemini) ? '' : 'status-dot-muted'}`}
           />
           {!ready
             ? t('設定を確認中')
-            : ready.openai && ready.gemini
+            : ready.openai && (ready.aiMode === 'openai' || ready.gemini)
               ? t('AIキー設定済み')
               : t('APIキーの設定が必要です')}
         </button>

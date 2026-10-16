@@ -80,6 +80,20 @@ export function useMeeting(store: SessionStore) {
   const stoppingInput = useRef(false);
   const stopping = useRef(false);
   const [summarizing, setSummarizing] = useState(false);
+  useEffect(() => {
+    const beforeConnectionChange = (event: Event) => {
+      if (
+        starting ||
+        stoppingListening ||
+        (listening !== 'idle' && listening !== 'error') ||
+        speaking !== 'idle'
+      )
+        event.preventDefault();
+    };
+    window.addEventListener('ledad-before-connection-change', beforeConnectionChange);
+    return () =>
+      window.removeEventListener('ledad-before-connection-change', beforeConnectionChange);
+  }, [starting, stoppingListening, listening, speaking]);
   const listener = useRef<MeetingListener | null>(null);
   const speaker = useRef<MeetingSpeaker | null>(null);
   const translationControllers = useRef(new Set<AbortController>());
@@ -300,7 +314,13 @@ export function useMeeting(store: SessionStore) {
   }
   function speakCandidate(candidateId: string) {
     const session = ref.current;
-    const candidate = session?.candidates.find((c) => c.id === candidateId && c.status === 'ready');
+    const candidate = session?.candidates.find(
+      (c) =>
+        c.id === candidateId &&
+        (c.status === 'ready' ||
+          c.status === 'spoken' ||
+          session.utterances.some((u) => u.candidateId === c.id)),
+    );
     if (!session || session.status !== 'active' || !candidate || generation.generating) return;
     setError('');
     // 押した時点の文章をコピーし、候補の更新とは独立した発話として固定します。

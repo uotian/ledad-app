@@ -112,3 +112,36 @@ def test_file_transcription_cost_uses_audio_minutes_and_keeps_old_snapshots(serv
     assert meeting_cost(session, [{**audio, "status": "failed"}])["openai"]["incomplete"]
     session.pricing.rates = [r for r in session.pricing.rates if r.model != "gpt-transcribe"]
     assert meeting_cost(session, [audio])["openai"] == {"yen": None, "incomplete": True}
+
+
+@pytest.mark.parametrize('model', ['gpt-4o-mini-tts', 'gpt-4o-mini-tts-2025-12-15'])
+def test_openai_tts_actual_usage_and_missing_legacy_rate(service, model):
+    session = service.sessions.create()
+    session.pricing = create_pricing_snapshot()
+    speech = record(session, operation='speech', model=model,
+                    inputTokens=50, outputTokens=25, cachedTokens=None)
+    expected = (50 * 0.6 + 25 * 12) / 1e6 * session.pricing.usd_to_jpy
+    assert meeting_cost(session, [speech])['openai']['yen'] == pytest.approx(expected)
+    rate = next(r for r in session.pricing.rates if r.model == 'gpt-4o-mini-tts')
+    rate.output_usd_per_million = 24
+    assert meeting_cost(session, [speech])['openai']['yen'] > expected
+    session.pricing.rates.remove(rate)
+    original = session.pricing.wire()
+    assert meeting_cost(session, [speech])['openai']['yen'] == pytest.approx(expected)
+    assert session.pricing.wire() == original
+    missing = {**speech, 'inputTokens': None, 'outputTokens': None, 'audioOutputSeconds': 10}
+    assert meeting_cost(session, [missing])['openai'] == {'yen': None, 'incomplete': True}
+
+
+@pytest.mark.parametrize('status', ['running', 'completed', 'failed', 'cancelled'])
+def test_openai_live_duration_and_old_snapshot(service, status):
+    session = service.sessions.create()
+    session.pricing = create_pricing_snapshot()
+    live = record(session, model='gpt-live-transcribe', operation='live_transcription',
+                  audioInputSeconds=90, status=status)
+    for old_snapshot in (False, True):
+        if old_snapshot:
+            session.pricing.rates = [r for r in session.pricing.rates if r.model != 'gpt-live-transcribe']
+        cost = meeting_cost(session, [live])['openai']
+        assert cost['yen'] == pytest.approx(1.5 * .017 * 157.58)
+        assert cost['incomplete'] is False

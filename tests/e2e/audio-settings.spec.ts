@@ -37,9 +37,9 @@ test('PC音声を初期選択し、デバイス選択なしで入力元を保存
     await page.goto(`/session/?id=${session.id}`);
     const input = page.getByRole('combobox', { name: '聞き取り音声の入力元', exact: true });
     await expect(input.locator('option')).toHaveText([
-      'PCの音声＋マイク(ZoomなどのWeb会議)',
-      'PCの音声(YouTubeなど)',
-      'マイクの音声(対面会議など)',
+      'PCの音声＋マイク(Zoom)',
+      'PCの音声(YouTube)',
+      'マイクの音声(対面会議)',
     ]);
     await expect(input).toHaveValue('display');
     await expect(input).toHaveAccessibleDescription('');
@@ -48,49 +48,44 @@ test('PC音声を初期選択し、デバイス選択なしで入力元を保存
     await expect(page.getByRole('button', { name: 'デバイスを確認' })).toHaveCount(0);
     const audioSettings = page.locator('section').filter({ has: input });
     await expect(audioSettings.locator('.inline-note')).toHaveCount(0);
-    await page.getByText('詳細設定', { exact: true }).click();
     await expect(audioSettings.locator('#audio-input-help')).toHaveCount(0);
-    await expect(page.getByLabel('聞き取りの自動停止時間')).toHaveValue('30');
-    await expect(page.getByLabel('聞き取りの自動停止時間').locator('option')).toHaveText([
+    await expect(page.getByLabel('自動停止時間')).toHaveValue('30');
+    await expect(page.getByLabel('自動停止時間').locator('option')).toHaveText([
       '10 min',
       '30 min',
       '60 min',
       '90 min',
     ]);
-    const fix = page.getByRole('combobox', { name: 'Fixed文字起こしの間隔', exact: true });
-    await expect(fix.locator('option')).toHaveText(['15 s', '30 s', '60 s', '120 s']);
-    await expect(fix).toHaveValue('60');
-    const vad = page.getByRole('combobox', { name: '発話区切りの無音時間', exact: true });
-    await expect(vad.locator('option')).toHaveText([
-      '50 ms',
-      '100 ms',
-      '200 ms',
-      '300 ms',
-      '500 ms',
-    ]);
-    await expect(vad).toHaveValue('100');
-    await expect(vad).toHaveAccessibleDescription('');
-    await expect(page.locator('#vad-silence-help')).toHaveCount(0);
-    await page.screenshot({ path: 'output/playwright/fix-settings-desktop.png', fullPage: true });
+    await expect(page.getByText('詳細設定', { exact: true })).toHaveCount(0);
+    await expect(page.locator('#fix-interval, #vad-silence')).toHaveCount(0);
+    await expect(page.locator('.audio-settings-grid > .field')).toHaveCount(4);
+    expect(
+      await page
+        .locator('.audio-settings-grid')
+        .evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length),
+    ).toBe(4);
+    await page.screenshot({ path: 'output/playwright/fix-settings-desktop.png' });
+    await page.setViewportSize({ width: 980, height: 900 });
+    expect(
+      await page
+        .locator('.audio-settings-grid')
+        .evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length),
+    ).toBe(2);
     await page.setViewportSize({ width: 390, height: 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
-    await page.screenshot({ path: 'output/playwright/fix-settings-mobile.png', fullPage: true });
+    await page.screenshot({ path: 'output/playwright/fix-settings-mobile.png' });
     await page.setViewportSize({ width: 1440, height: 960 });
-    for (const seconds of ['15', '30', '120', '60']) {
-      await fix.selectOption(seconds);
-      await expect
-        .poll(
-          async () =>
-            (await (await request.get(`${service}/api/sessions/${session.id}`)).json()).settings
-              .fixIntervalSeconds,
-        )
-        .toBe(Number(seconds));
-      await page.reload();
-      await page.getByText('詳細設定', { exact: true }).click();
-      await expect(fix).toHaveValue(seconds);
-    }
+    await page.getByLabel('自動停止時間').selectOption('60');
+    await expect
+      .poll(
+        async () =>
+          (await (await request.get(`${service}/api/sessions/${session.id}`)).json()).settings,
+      )
+      .toMatchObject({ listeningLimitMinutes: 60, fixIntervalSeconds: 60, vadSilenceMs: 100 });
+    await page.reload();
+    await expect(page.getByLabel('自動停止時間')).toHaveValue('60');
 
     await page.screenshot({ path: 'artifacts/audio-settings-pc.png' });
     await input.selectOption('microphone');
@@ -282,30 +277,39 @@ test('ホームで保存した下書きを再読込でき、すべて削除後�
   }
 });
 
-test('声の種類を会議中の一般設定で変更し、再読込後も保持する', async ({ page, request }) => {
+test('声の種類を会議中のAPI設定で変更し、再読込後も保持する', async ({ page, request }) => {
   const session = await (await request.post(`${service}/api/sessions`, { data: {} })).json();
   session.status = 'active';
   await request.put(`${service}/api/sessions/${session.id}`, { data: session });
   try {
     await page.goto(`/session/?id=${session.id}`);
     await page.getByRole('button', { name: '設定', exact: true }).click();
+    await page.getByRole('tab', { name: 'AI', exact: true }).click();
+    if (!(await page.getByRole('checkbox', { name: 'Geminiも使う', exact: true }).isChecked())) {
+      await page.getByRole('checkbox', { name: 'Geminiも使う', exact: true }).click();
+    }
+    await expect(page.getByRole('checkbox', { name: 'Geminiも使う', exact: true })).toBeChecked();
     const voice = page.getByRole('combobox', { name: '声の種類', exact: true });
     await expect(voice).toBeEnabled();
     await voice.selectOption('Puck');
     await expect(voice).toHaveValue('Puck');
-    await expect(voice).toHaveAccessibleDescription('次の読み上げから反映します。');
+    await expect(page.getByText('次の読み上げから反映します。')).toHaveCount(0);
     await page.screenshot({ path: 'output/playwright/voice-settings.png' });
     await page.getByRole('button', { name: '設定を閉じる', exact: true }).click();
     page.on('dialog', (dialog) => dialog.accept());
     await page.reload();
     await page.getByRole('button', { name: '設定', exact: true }).click();
+    await page.getByRole('tab', { name: 'AI', exact: true }).click();
+    if (!(await page.getByRole('checkbox', { name: 'Geminiも使う', exact: true }).isChecked())) {
+      await page.getByRole('checkbox', { name: 'Geminiも使う', exact: true }).click();
+    }
+    await expect(page.getByRole('checkbox', { name: 'Geminiも使う', exact: true })).toBeChecked();
     await expect(voice).toHaveValue('Puck');
     expect((await (await request.get(`${service}/api/sessions/${session.id}`)).json()).status).toBe(
       'active',
     );
     await page.getByRole('button', { name: '設定を閉じる', exact: true }).click();
     await page.getByRole('link', { name: 'ledad ホーム' }).click();
-    await page.getByText('詳細設定', { exact: true }).click();
     await expect(page.getByRole('combobox', { name: '声の種類', exact: true })).toHaveCount(0);
   } finally {
     await request.delete(`${service}/api/sessions/${session.id}`);

@@ -1,4 +1,14 @@
 export const messages: Record<string, { en: string; zh: string; fr: string }> = {
+  音声生成中: { en: 'Generating audio', zh: '正在生成语音', fr: 'Génération audio' },
+  読み上げ中: { en: 'Speaking', zh: '正在朗读', fr: 'Lecture en cours' },
+  読み上げ失敗: { en: 'Speech failed', zh: '朗读失败', fr: 'Échec de la lecture' },
+  途中停止: { en: 'Interrupted', zh: '已中断', fr: 'Lecture interrompue' },
+  発話済み: { en: 'Spoken', zh: '已朗读', fr: 'Lu' },
+  '候補{number}をもう一度読み上げる': {
+    en: 'Read candidate {number} aloud again',
+    zh: '再次朗读候选{number}',
+    fr: 'Relire la proposition {number}',
+  },
   'フランス語 / Français': { en: 'French / Français', zh: '法语 / Français', fr: 'Français' },
   最終更新: { en: 'Last updated', zh: '最后更新', fr: 'Dernière mise à jour' },
   表示の切り替え: { en: 'Display layout', zh: '切换布局', fr: 'Disposition' },
@@ -264,11 +274,6 @@ export const messages: Record<string, { en: string; zh: string; fr: string }> = 
     zh: 'AI 服务发生错误。请稍后重试。',
     fr: 'Une erreur est survenue sur le service d’IA. Patientez un instant et réessayez.',
   },
-  '次の読み上げから反映します。': {
-    en: 'Applies to the next speech.',
-    zh: '从下一次朗读开始生效。',
-    fr: 'S’applique à la prochaine lecture.',
-  },
   '声の設定を保存できませんでした。': {
     en: 'Could not save the voice setting.',
     zh: '无法保存声音设置。',
@@ -301,22 +306,22 @@ export const messages: Record<string, { en: string; zh: string; fr: string }> = 
     zh: '等待会话分析（剩余约{seconds}秒）',
     fr: 'Analyse dans environ {seconds} s',
   },
+  'Fix聞き取り中（−{seconds}秒）': {
+    en: 'Fix transcription collecting (−{seconds}s)',
+    zh: 'Fix识别中（−{seconds}秒）',
+    fr: 'Collecte audio pour Fix (−{seconds} s)',
+  },
   'Fix聞き取り中（あと約{seconds}秒）': {
     en: 'Fix transcription collecting (~{seconds}s left)',
     zh: 'Fix识别中（剩余约{seconds}秒）',
     fr: 'Collecte audio pour Fix (encore ~{seconds} s)',
   },
-  'Fix追加音声取得中（あと約{seconds}秒）': {
-    en: 'Fix collecting additional audio (~{seconds}s left)',
-    zh: 'Fix正在采集追加音频（剩余约{seconds}秒）',
-    fr: 'Collecte audio supplémentaire pour Fix (encore ~{seconds} s)',
-  },
-  Fix聞き取りの処理中: {
+  Fix処理中: {
     en: 'Fix transcription processing',
     zh: 'Fix识别处理中',
     fr: 'Transcription Fix en cours',
   },
-  Fix聞き取りの区切り待ち: {
+  Fix区切り待ち: {
     en: 'Fix transcription waiting for a speech boundary',
     zh: 'Fix识别等待发言结束',
     fr: 'Fix attend la fin d’une prise de parole',
@@ -434,10 +439,10 @@ export const messages: Record<string, { en: string; zh: string; fr: string }> = 
     zh: '无法打开账单页面。',
     fr: 'Impossible d’ouvrir la page de facturation.',
   },
-  聞き取りの自動停止時間: {
-    en: 'Listening auto-stop duration',
-    zh: '听写自动停止时长',
-    fr: 'Arrêt automatique de l’écoute',
+  自動停止時間: {
+    en: 'Auto-stop duration',
+    zh: '自动停止时长',
+    fr: 'Arrêt automatique',
   },
   '30分': { en: '30 minutes', zh: '30分钟', fr: '30 minutes' },
   '60分': { en: '60 minutes', zh: '60分钟', fr: '60 minutes' },
@@ -839,10 +844,39 @@ export const messages: Record<string, { en: string; zh: string; fr: string }> = 
     zh: 'AI 用量',
     fr: 'Utilisation de l’IA',
   },
-  'APIキーはMacのキーチェーンに保存します。登録済みのキーは表示しません。': {
-    en: 'API keys are stored in Mac Keychain. Saved keys are not displayed.',
-    zh: 'API 密钥保存在 Mac 钥匙串中。已保存的密钥不会显示。',
-    fr: 'Les clés API sont stockées dans le trousseau du Mac. Les clés enregistrées ne sont pas affichées.',
+  利用するAI: { en: 'AI providers', zh: '使用的 AI', fr: 'Fournisseurs IA' },
+  OpenAIのみ: { en: 'OpenAI only', zh: '仅 OpenAI', fr: 'OpenAI uniquement' },
+  Geminiも使う: { en: 'Use Gemini too', zh: '同时使用 Gemini', fr: 'Utiliser aussi Gemini' },
+  'AI設定を保存できませんでした。': {
+    en: 'Could not save AI settings.',
+    zh: '无法保存 AI 设置。',
+    fr: 'Impossible d’enregistrer les paramètres IA.',
+  },
+  '声の設定を読み込めません。': {
+    en: 'Could not load voice settings.',
+    zh: '无法读取声音设置。',
+    fr: 'Impossible de charger les paramètres vocaux.',
+  },
+  '接続先URL（base_url）': {
+    en: 'Endpoint URL (base_url)',
+    zh: '连接地址（base_url）',
+    fr: 'URL de connexion (base_url)',
+  },
+  接続先を保存: { en: 'Save endpoint', zh: '保存连接地址', fr: 'Enregistrer l’URL' },
+  '空欄：OpenAI公式': {
+    en: 'Blank: OpenAI default',
+    zh: '留空：OpenAI 官方',
+    fr: 'Vide : OpenAI officiel',
+  },
+  '聞き取り・読み上げを停止してから接続先を変更してください。': {
+    en: 'Stop listening and speech playback before changing the endpoint.',
+    zh: '请先停止听写和朗读，再修改连接地址。',
+    fr: 'Arrêtez l’écoute et la lecture avant de modifier l’URL.',
+  },
+  AI: {
+    en: 'AI',
+    zh: 'AI',
+    fr: 'IA',
   },
   'OpenAI APIキー': {
     en: 'OpenAI API key',
@@ -1044,20 +1078,20 @@ export const messages: Record<string, { en: string; zh: string; fr: string }> = 
     zh: '音频结束处理超时。已保留显示的对话。',
     fr: 'Le délai de finalisation audio est dépassé. La conversation affichée a été conservée.',
   },
-  'PCの音声＋マイク(ZoomなどのWeb会議)': {
-    en: 'PC audio + microphone (Zoom and other online meetings)',
-    zh: '电脑音频＋麦克风（Zoom 等线上会议）',
-    fr: 'Audio du PC + micro (Zoom et autres réunions en ligne)',
+  'PCの音声＋マイク(Zoom)': {
+    en: 'PC audio + microphone (Zoom)',
+    zh: '电脑音频＋麦克风（Zoom）',
+    fr: 'Audio du PC + micro (Zoom)',
   },
-  'PCの音声(YouTubeなど)': {
-    en: 'PC audio (YouTube, etc.)',
-    zh: '电脑音频（YouTube 等）',
-    fr: 'Audio du PC (YouTube, etc.)',
+  'PCの音声(YouTube)': {
+    en: 'PC audio (YouTube)',
+    zh: '电脑音频（YouTube）',
+    fr: 'Audio du PC (YouTube)',
   },
-  'マイクの音声(対面会議など)': {
-    en: 'Microphone audio (in-person meetings, etc.)',
-    zh: '麦克风音频（线下会议等）',
-    fr: 'Micro (réunions en présentiel, etc.)',
+  'マイクの音声(対面会議)': {
+    en: 'Microphone audio (in-person meetings)',
+    zh: '麦克风音频（线下会议）',
+    fr: 'Micro (réunions en présentiel)',
   },
   会議の準備: {
     en: 'Prepare meeting',
@@ -1255,6 +1289,7 @@ export const messages: Record<string, { en: string; zh: string; fr: string }> = 
     zh: '正在准备语音',
     fr: 'Préparation de l’audio',
   },
+  フランス語: { en: 'French', zh: '法语', fr: 'Français' },
   英語: {
     en: 'English',
     zh: '英语',

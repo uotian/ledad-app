@@ -294,3 +294,12 @@
     --meeting-gutter: 16px;
   }
 }
+
+@media (max-width: 900px) {
+  .session-controls {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .session-controls > .audio-state {
+    grid-column: 1 / -1;
+  }
+}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Coins } from 'lucide-react';
 import { useI18n } from '@/components/settings/LanguageProvider';
 import { pollUsage } from '@/lib/usage/poll';
 import type { MeetingCost, ProviderCost } from '@/lib/usage/cost';
@@ -74,7 +75,8 @@ export default function MeetingUsageCost({
           aria-label={`${label} · ${amount}`}
           onClick={() => setOpen(true)}
         >
-          API {amount}
+          <Coins size={16} aria-hidden="true" />
+          {amount}
         </button>
       </span>
       {open && (

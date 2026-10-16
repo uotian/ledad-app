@@ -136,7 +136,9 @@ test('全件削除の取消・処理中・途中失敗・再試行と個別削�
     await deleteAll.click();
     await expect(rows).toHaveCount(0);
     await expect(deleteAll).toHaveCount(0);
-    await expect(page.locator('.recent-sessions .session-count')).toHaveText('0件');
+    await expect(page.locator('.recent-sessions .session-count')).toHaveCount(0);
+    await expect(page.locator('.recent-sessions .session-list')).toHaveCount(0);
+    await expect(page.locator('.recent-sessions .session-empty')).toHaveText('no data');
     await expect(page.locator('.recent-sessions .empty-state')).toHaveCount(0);
     expect(sessions).toEqual([]);
     expect(requested).toContain('00000000-0000-4000-8000-000000000004');

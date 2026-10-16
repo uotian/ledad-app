@@ -26,7 +26,7 @@ Next.js 负责界面和实时音频传输，Python 负责会议数据管理和 A
 ## 使用要求
 
 - 搭载 Apple Silicon 的 Mac，macOS 26 或更高版本
-- OpenAI 和 Gemini API 密钥
+- OpenAI API 密钥（Gemini 为可选项）
 - [LibreOffice](https://www.libreoffice.org/download/download-libreoffice/)（用于转换 PowerPoint 文件）
 
 ## 安装
@@ -76,7 +76,9 @@ npm run app:build
 
 ### 注册 API 密钥
 
-在应用的“设置”中添加 OpenAI 和 Gemini API 密钥。
+在“设置”→“AI”中添加 OpenAI API 密钥。如需同时使用 Gemini，请勾选 Gemini 选项并添加其密钥。
+
+可指定兼容 OpenAI 的自定义 `base_url`，用于文本和音频处理。指定后，Live 转录固定使用 Apple，Gemini 被禁用。连接地址须支持现有模型名称和 API 格式，详见[连接要求](docs/design/05-ai/02-connection.md)。
 
 ### 允许音频访问
 

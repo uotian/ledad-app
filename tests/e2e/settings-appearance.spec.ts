@@ -25,10 +25,17 @@ test('設定の文字サイズがS/M/Lに連動し、閉じるボタンに枠を
     await page.getByRole('radio', { name: size, exact: true }).check();
     await expect.poll(textSizes).toEqual(small.map((value) => Number((value * scale).toFixed(2))));
   }
-  await page.getByRole('tab', { name: 'APIキー', exact: true }).click();
-  await expect(dialog.locator('.settings-description')).toHaveCSS('font-size', '14.3px');
+  await page.getByRole('tab', { name: 'AI', exact: true }).click();
+  await expect(dialog.locator('.settings-models')).toHaveCSS('margin-bottom', '24px');
+  await expect(dialog.getByRole('heading', { name: 'APIキー', exact: true })).toHaveCount(0);
   await expect(dialog.locator('input').first()).toHaveCSS('font-size', '15.6px');
-  for (const tab of ['APIキー', '一般']) {
+  await expect(dialog.locator('.settings-models-heading > strong')).toHaveCSS(
+    'font-size',
+    '16.9px',
+  );
+  await expect(dialog.locator('#connection-help')).toHaveCount(0);
+  await expect(dialog.locator('#base-url')).toHaveAttribute('placeholder', '空欄：OpenAI公式');
+  for (const tab of ['AI', '一般']) {
     await page.getByRole('tab', { name: tab, exact: true }).click();
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 700 });

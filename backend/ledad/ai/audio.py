@@ -2,12 +2,12 @@ import io
 import wave
 
 
-def wav_bytes(pcm):
+def wav_bytes(pcm, sample_rate=16000):
     output = io.BytesIO()
     with wave.open(output, "wb") as writer:
         writer.setnchannels(1)
         writer.setsampwidth(2)
-        writer.setframerate(16000)
+        writer.setframerate(sample_rate)
         writer.writeframes(pcm)
     return output.getvalue()
 

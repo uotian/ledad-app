@@ -22,4 +22,6 @@ Frontend・Backend・音声取得機能を一つのMacアプリに同梱しま�
 
 ## アプリアイコン
 
-青寄りの落ち着いた水色を背景に、鏡文字のLedadと穏やかな水面の反射を配置します。波紋と紙の質感は葛飾北斎の木版画をイメージしています。原画像は`src-tauri/icons/source.png`です。`npx tauri icon src-tauri/icons/source.png`で各サイズと`icon.icns`を生成し、Tauriのbundle設定から同梱します。
+カフェラテ色の背景に、楔形文字「𒅗」をモチーフにしたこげ茶の記号を大きく配置します。左の縦長の楔は右の縦画と高さを揃え、三辺を内側へ緩やかにくぼませます。
+
+原画像は`assets/ledad-icon.png`です。`npx tauri icon assets/ledad-icon.png --output src-tauri/icons`で各サイズと`icon.icns`を生成し、Tauriのbundle設定から同梱します。アプリ内のホームボタンには家型アイコンを使用します。

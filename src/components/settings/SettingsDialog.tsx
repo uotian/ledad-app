@@ -14,12 +14,15 @@ import { api } from '@/lib/api';
 import Button from '@/components/ui/Button';
 import ErrorBanner from '@/components/ui/ErrorBanner';
 type Config = {
+  baseUrl: string;
+  aiMode: 'openai' | 'gemini';
   openai: boolean;
   gemini: boolean;
-  liveProvider: 'gemini' | 'apple';
-  liveModels: { gemini: string; apple: string };
+  liveProvider: 'gemini' | 'apple' | 'openai';
+  liveModels: { openai: string; gemini: string; apple: string };
   refinementProvider: 'openai' | 'gemini';
   refinementModels: { openai: string; gemini: string };
+  speechModels: { openai: string; gemini: string };
   models: {
     generation: string;
     transcription: string;
@@ -43,22 +46,28 @@ export default function SettingsDialog({
   const [config, setConfig] = useState<Config | null>(null);
   const [openai, setOpenai] = useState('');
   const [gemini, setGemini] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
   const [busy, setBusy] = useState(false);
-  const [savingProvider, setSavingProvider] = useState(false);
-  const [savingLiveProvider, setSavingLiveProvider] = useState(false);
+  const [savingSetting, setSavingSetting] = useState(false);
   const [error, setError] = useState('');
   const [tab, setTab] = useState(initialTab);
   useEffect(() => {
     dialog.current?.showModal();
     api<Config>('/api/config')
-      .then(setConfig)
+      .then((value) => {
+        setConfig(value);
+        setBaseUrl(value.baseUrl);
+      })
       .catch((e) => setError(e.message));
   }, []);
   async function save() {
     setBusy(true);
     setError('');
     try {
-      await desktopInvoke('save_keys', { openai, gemini });
+      await desktopInvoke('save_keys', {
+        openai,
+        gemini: config?.aiMode === 'gemini' ? gemini : '',
+      });
       setOpenai('');
       setGemini('');
       onSaved?.();
@@ -69,36 +78,37 @@ export default function SettingsDialog({
       setBusy(false);
     }
   }
-  async function changeRefinementProvider(provider: Config['refinementProvider']) {
-    setSavingProvider(true);
+  async function saveConnection() {
+    if (!window.dispatchEvent(new Event('ledad-before-connection-change', { cancelable: true }))) {
+      setError(t('聞き取り・読み上げを停止してから接続先を変更してください。'));
+      return;
+    }
+    setSavingSetting(true);
     setError('');
     try {
-      setConfig(
-        await api<Config>('/api/config', {
-          method: 'PUT',
-          body: JSON.stringify({ provider }),
-        }),
-      );
-    } catch {
-      setError(t('Fixedの文字起こし先を保存できませんでした。'));
+      const next = await api<Config>('/api/connection-settings', {
+        method: 'PUT',
+        body: JSON.stringify({ baseUrl }),
+      });
+      setConfig(next);
+      setBaseUrl(next.baseUrl);
+      onSaved?.();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('AI設定を保存できませんでした。'));
     } finally {
-      setSavingProvider(false);
+      setSavingSetting(false);
     }
   }
-  async function changeLiveProvider(provider: Config['liveProvider']) {
-    setSavingLiveProvider(true);
+  async function changeSetting(path: string, value: object) {
+    setSavingSetting(true);
     setError('');
     try {
-      setConfig(
-        await api<Config>('/api/live-settings', {
-          method: 'PUT',
-          body: JSON.stringify({ provider }),
-        }),
-      );
+      setConfig(await api<Config>(path, { method: 'PUT', body: JSON.stringify(value) }));
+      onSaved?.();
     } catch {
-      setError(t('Liveの文字起こし先を保存できませんでした。'));
+      setError(t('AI設定を保存できませんでした。'));
     } finally {
-      setSavingLiveProvider(false);
+      setSavingSetting(false);
     }
   }
   return (
@@ -123,24 +133,40 @@ export default function SettingsDialog({
           {t('一般')}
         </button>
         <button role="tab" aria-selected={tab === 'keys'} onClick={() => setTab('keys')}>
-          {t('APIキー')}
+          {t('AI')}
         </button>
       </div>
       {tab === 'general' ? (
         <div className="settings-general">
           <NameSettings />
-          <VoiceSettings />
           <AnalyzeIntervalSettings />
           <LanguageSettings />
           <TextSizeSettings />
         </div>
       ) : (
         <>
-          <h3 className="settings-section-title">{t('APIキー')}</h3>
           <ErrorBanner message={error} />
-          <p className="settings-description">
-            {t('APIキーはMacのキーチェーンに保存します。登録済みのキーは表示しません。')}
-          </p>
+          <div className="field">
+            <label htmlFor="base-url">{t('接続先URL（base_url）')}</label>
+            <div className="settings-connection">
+              <input
+                id="base-url"
+                type="url"
+                value={baseUrl}
+                maxLength={2048}
+                placeholder={t('空欄：OpenAI公式')}
+                disabled={!config || savingSetting || busy}
+                onChange={(e) => setBaseUrl(e.target.value)}
+              />
+              <Button
+                small
+                onClick={saveConnection}
+                disabled={!config || savingSetting || busy || baseUrl === config.baseUrl}
+              >
+                {t('接続先を保存')}
+              </Button>
+            </div>
+          </div>
           <label className="field">
             {t('OpenAI APIキー')}{' '}
             <span className="settings-key-status">
@@ -154,37 +180,61 @@ export default function SettingsDialog({
               placeholder={config?.openai ? t('変更する場合だけ入力') : t('APIキーを入力')}
             />
           </label>
-          <label className="field">
-            {t('Gemini APIキー')}{' '}
-            <span className="settings-key-status">
-              {config?.gemini ? t('設定済み') : t('未設定')}
-            </span>
-            <input
-              type="password"
-              autoComplete="off"
-              value={gemini}
-              onChange={(e) => setGemini(e.target.value)}
-              placeholder={config?.gemini ? t('変更する場合だけ入力') : t('APIキーを入力')}
-            />
-          </label>
+          {config?.aiMode === 'gemini' && (
+            <label className="field">
+              {t('Gemini APIキー')}{' '}
+              <span className="settings-key-status">
+                {config?.gemini ? t('設定済み') : t('未設定')}
+              </span>
+              <input
+                type="password"
+                autoComplete="off"
+                value={gemini}
+                onChange={(e) => setGemini(e.target.value)}
+                placeholder={config?.gemini ? t('変更する場合だけ入力') : t('APIキーを入力')}
+              />
+            </label>
+          )}
           <div className="settings-models">
-            <strong>{t('使用するモデル')}</strong>
+            <div className="settings-models-heading">
+              <strong>{t('使用するモデル')}</strong>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={config?.aiMode === 'gemini'}
+                  disabled={!config || !!config.baseUrl || savingSetting || busy}
+                  onChange={(e) =>
+                    void changeSetting('/api/ai-settings', {
+                      mode: e.target.checked ? 'gemini' : 'openai',
+                    })
+                  }
+                />
+                {t('Geminiも使う')}
+              </label>
+            </div>
             <dl>
               <dt id="live-provider-label">{t('聞き取り（Live）')}</dt>
               <dd>
-                <select
-                  aria-labelledby="live-provider-label"
-                  value={config?.liveProvider ?? 'gemini'}
-                  disabled={!config || savingLiveProvider}
-                  onChange={(event) =>
-                    void changeLiveProvider(event.target.value as Config['liveProvider'])
-                  }
-                >
-                  <option value="gemini">{config?.liveModels.gemini || t('確認中')}</option>
-                  <option value="apple" disabled={!isDesktop()}>
-                    {config?.liveModels.apple || 'Apple SpeechTranscriber'}
-                  </option>
-                </select>
+                {config?.baseUrl ? (
+                  <span>Apple SpeechTranscriber</span>
+                ) : (
+                  <select
+                    aria-labelledby="live-provider-label"
+                    value={config?.liveProvider ?? 'openai'}
+                    disabled={!config || savingSetting || busy}
+                    onChange={(event) =>
+                      void changeSetting('/api/live-settings', { provider: event.target.value })
+                    }
+                  >
+                    <option value="openai">{config?.liveModels.openai || t('確認中')}</option>
+                    {config?.aiMode === 'gemini' && (
+                      <option value="gemini">{config.liveModels.gemini}</option>
+                    )}
+                    <option value="apple" disabled={!isDesktop()}>
+                      {config?.liveModels.apple || 'Apple SpeechTranscriber'}
+                    </option>
+                  </select>
+                )}
                 {config?.liveProvider === 'apple' && (
                   <p className="field-help">
                     {t(
@@ -195,32 +245,45 @@ export default function SettingsDialog({
               </dd>
               <dt id="refinement-provider-label">{t('聞き取り（Fixed）')}</dt>
               <dd>
-                <select
-                  aria-labelledby="refinement-provider-label"
-                  value={config?.refinementProvider ?? 'openai'}
-                  disabled={!config || savingProvider}
-                  onChange={(event) =>
-                    void changeRefinementProvider(
-                      event.target.value as Config['refinementProvider'],
-                    )
-                  }
-                >
-                  <option value="openai">{config?.refinementModels.openai || t('確認中')}</option>
-                  <option value="gemini">{config?.refinementModels.gemini || t('確認中')}</option>
-                </select>
+                {config?.aiMode !== 'gemini' ? (
+                  <span>{config?.refinementModels.openai || t('確認中')}</span>
+                ) : (
+                  <select
+                    aria-labelledby="refinement-provider-label"
+                    value={config?.refinementProvider ?? 'openai'}
+                    disabled={!config || savingSetting || busy}
+                    onChange={(event) =>
+                      void changeSetting('/api/config', { provider: event.target.value })
+                    }
+                  >
+                    <option value="openai">{config?.refinementModels.openai || t('確認中')}</option>
+                    <option value="gemini">{config?.refinementModels.gemini || t('確認中')}</option>
+                  </select>
+                )}
               </dd>
               <dt>{t('翻訳・候補・要約')}</dt>
               <dd>{config?.models.generation || t('確認中')}</dd>
               <dt>{t('AIへの相談')}</dt>
               <dd>{config?.models.consultation || t('確認中')}</dd>
-              <dt>{t('音声出力')}</dt>
-              <dd>{config?.models.speech || t('確認中')}</dd>
+              {config && (
+                <VoiceSettings
+                  key={config.aiMode}
+                  mode={config.aiMode}
+                  models={config.speechModels}
+                  disabled={savingSetting || busy}
+                />
+              )}
             </dl>
           </div>
           <Button
             variant="primary"
             className="full-width"
-            disabled={busy || (!openai.trim() && !gemini.trim()) || !isDesktop()}
+            disabled={
+              busy ||
+              savingSetting ||
+              (!openai.trim() && !(config?.aiMode === 'gemini' && gemini.trim())) ||
+              !isDesktop()
+            }
             onClick={save}
           >
             {busy ? t('保存中…') : t('キーチェーンに保存')}

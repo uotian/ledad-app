@@ -1,7 +1,9 @@
 import asyncio
+import base64
 from contextlib import asynccontextmanager
+from typing import Any
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, AsyncStream, DefaultAsyncHttpxClient
 from openai.lib._pydantic import to_strict_json_schema
 from pydantic_core import from_json
 
@@ -15,6 +17,7 @@ class OpenAIProvider:
         self.config, self.usage = config, usage
         self._client = None
         self._key = None
+        self._base_url = None
         self._active = {}
         self._retired = set()
 
@@ -23,12 +26,17 @@ class OpenAIProvider:
         key = self.config.openai_key
         if not key:
             raise AppError("設定からOpenAI APIキーを登録してください。")
-        if key != self._key:
-            replacement = AsyncOpenAI(api_key=key, timeout=60, max_retries=0)
+        base_url = self.config.base_url() or "https://api.openai.com/v1"
+        if key != self._key or base_url != self._base_url:
+            replacement = AsyncOpenAI(
+                api_key=key, base_url=base_url, timeout=60, max_retries=0,
+                **({"http_client": DefaultAsyncHttpxClient(follow_redirects=False)} if self.config.base_url() else {}),
+            )
             if self._client:
                 self._retired.add(self._client)
             self._client = replacement
             self._key = key
+            self._base_url = base_url
         client = self._client
         self._active[client] = self._active.get(client, 0) + 1
         try:
@@ -47,9 +55,89 @@ class OpenAIProvider:
 
     async def close(self):
         clients = self._retired | ({self._client} if self._client else set())
-        self._client = self._key = None
+        self._client = self._key = self._base_url = None
         self._retired.clear()
         await asyncio.gather(*(client.close() for client in clients))
+
+    async def live_token(self, session, vocabulary):
+        if self.config.base_url():
+            raise AppError("カスタム接続先の使用中はLiveにAppleを使用してください。")
+        model = self.config.openai_live_stt_model
+        keywords = [word for word in vocabulary if not any(c in word for c in "<>\r\n")]
+        config = {
+            "type": "transcription",
+            "audio": {"input": {
+                "format": {"type": "audio/pcm", "rate": 24000},
+                "transcription": {
+                    "model": model, "languages": [session.settings.language], "delay": "low",
+                    **({"keywords": keywords} if keywords else {}),
+                },
+                "turn_detection": None,
+            }},
+        }
+        request = {"expires_after": {"anchor": "created_at", "seconds": 60}, "session": config}
+        async with self.usage.measured("openai", "live_token", model, session.id) as record:
+            self.usage.capture(record, request=request)
+            async with self.client() as client:
+                token = await client.post(
+                    "/realtime/client_secrets", body=request, cast_to=dict[str, Any]
+                )
+            self.usage.capture(record, response={"expires_at": token.get("expires_at")})
+            if not isinstance(token.get("value"), str) or not token["value"]:
+                raise AppError("聞き取り用の接続を準備できませんでした。", 502)
+        usage = self.usage.new("openai", "live_transcription", model, session.id)
+        self.usage.save(usage)
+        self.usage.capture(usage, request=config)
+        return {"token": token["value"], "model": model, "config": config, "usageId": usage.id}
+
+    async def speech(self, session_id, text, language, voice):
+        async with self.usage.measured(
+            "openai", "speech", self.config.openai_tts_model, session_id
+        ) as record:
+            record.input_characters = len(text)
+            request = {
+                "model": self.config.openai_tts_model,
+                "input": text,
+                "voice": voice,
+                "response_format": "pcm",
+                "stream_format": "sse",
+                "instructions": (
+                    f"{ {'ja': '日本語', 'en': 'English', 'zh': '普通话', 'fr': 'Français'}[language] }。"
+                    "落ち着いた明瞭な会議の発言。入力された文章をそのまま読む。"
+                ),
+            }
+            self.usage.capture(record, request=request)
+            audio = bytearray()
+            completed = False
+            async with asyncio.timeout(60), self.client() as client:
+                # The SDK speech helper returns binary; its public post API decodes SSE events.
+                stream = await client.post(
+                    "/audio/speech", body=request, cast_to=dict[str, Any],
+                    stream=True, stream_cls=AsyncStream[dict[str, Any]],
+                )
+                record.provider_request_id = stream.response.headers.get("x-request-id")
+                async with stream:
+                    async for event in stream:
+                        if event.get("type") == "speech.audio.delta":
+                            audio.extend(base64.b64decode(event["audio"], validate=True))
+                            if len(audio) > 20_000_000:
+                                raise AppError("生成された音声が長すぎます。", 502)
+                        elif event.get("type") == "speech.audio.done":
+                            usage = event.get("usage", {})
+                            counts = [usage.get(key) for key in (
+                                "input_tokens", "output_tokens", "total_tokens"
+                            )]
+                            if any(type(value) is not int or value < 0 for value in counts):
+                                raise AppError("音声の使用量を取得できませんでした。", 502)
+                            record.input_tokens, record.output_tokens, record.total_tokens = counts
+                            self.usage.capture(record, response=event)
+                            completed = True
+                            break
+            if not completed or not audio or len(audio) % 2:
+                raise AppError("音声を最後まで受信できませんでした。再開で再試行してください。", 502)
+            record.audio_output_seconds = len(audio) / (24000 * 2)
+            data = wav_bytes(audio, sample_rate=24000)
+            return data, "audio/wav"
 
     async def transcribe(self, pcm, language, vocabulary, record):
         if not self.config.openai_key:

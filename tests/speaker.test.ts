@@ -2,6 +2,7 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { MeetingSpeaker } from '../src/lib/audio/speaker';
 import { createSession } from '../src/lib/session/defaults';
 import type { Utterance } from '../src/lib/session/schema';
+vi.mock('../src/lib/api', () => ({ api: vi.fn(async () => ({ aiMode: 'gemini' })) }));
 vi.mock('../src/lib/desktop', () => ({
   serviceFetch: (...args: unknown[]) => fetch(...(args as Parameters<typeof fetch>)),
 }));
@@ -46,6 +47,11 @@ function createSpeaker() {
 }
 beforeEach(() => {
   FakeAudio.instances = [];
+  const values = new Map<string, string>();
+  vi.stubGlobal('localStorage', {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+  });
   vi.stubGlobal('Audio', FakeAudio);
   vi.stubGlobal(
     'fetch',
@@ -130,30 +136,63 @@ describe('発話の停止と再開', () => {
   });
 });
 
-it('全体の声設定は次の発言から使い、再生中の発言の声は変えない', async () => {
-  const values = new Map<string, string>();
-  vi.stubGlobal('localStorage', {
-    getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => values.set(key, value),
-  });
-  const { saveVoice, readVoice } = await import('@/components/settings/voice');
-  expect(readVoice()).toBeNull();
-  saveVoice('Puck');
-  const settings = createSession().settings;
-  settings.voice = 'Aoede';
+it.each(['Charon', 'marin', 'cedar'] as const)(
+  '声設定 %s は次の発言から使い、再生中の声は変えない',
+  async (nextVoice) => {
+    const values = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+    });
+    const { saveVoice, readVoice } = await import('@/components/settings/voice');
+    expect(readVoice()).toBeNull();
+    saveVoice('Puck', 'gemini');
+    const settings = createSession().settings;
+    settings.voice = 'Aoede';
+    const { speaker } = createSpeaker();
+    const requestedVoice = () =>
+      JSON.parse(vi.mocked(fetch).mock.lastCall![1]!.body as string).voice;
+    speaker.start('一つ目の文です。二つ目の文です。', settings);
+    await settle();
+    expect(requestedVoice()).toBe('Puck');
+    saveVoice(nextVoice, 'gemini');
+    FakeAudio.instances[0].finish();
+    await settle();
+    expect(requestedVoice()).toBe('Puck');
+    FakeAudio.instances[1].finish();
+    speaker.start('次の発言です。', settings);
+    await settle();
+    expect(requestedVoice()).toBe(nextVoice);
+    expect(readVoice('gemini')).toBe(nextVoice);
+    expect(settings.voice).toBe('Aoede');
+    speaker.stop();
+  },
+);
+
+it('モード取得中に停止した発言を再生しない', async () => {
+  const { api } = await import('../src/lib/api');
+  let resolve!: (value: { aiMode: string }) => void;
+  vi.mocked(api).mockImplementationOnce(
+    () =>
+      new Promise((r) => {
+        resolve = r;
+      }),
+  );
   const { speaker } = createSpeaker();
-  const requestedVoice = () => JSON.parse(vi.mocked(fetch).mock.lastCall![1]!.body as string).voice;
-  speaker.start('一つ目の文です。二つ目の文です。', settings);
-  await settle();
-  expect(requestedVoice()).toBe('Puck');
-  saveVoice('Charon');
-  FakeAudio.instances[0].finish();
-  await settle();
-  expect(requestedVoice()).toBe('Puck');
-  FakeAudio.instances[1].finish();
-  speaker.start('次の発言です。', settings);
-  await settle();
-  expect(requestedVoice()).toBe('Charon');
-  expect(settings.voice).toBe('Aoede');
+  speaker.start('中断します。', createSession().settings);
   speaker.stop();
+  resolve({ aiMode: 'openai' });
+  await settle();
+  expect(fetch).not.toHaveBeenCalled();
+  expect(FakeAudio.instances).toHaveLength(0);
+});
+
+it('モード取得失敗時に別プロバイダーへフォールバックしない', async () => {
+  const { api } = await import('../src/lib/api');
+  vi.mocked(api).mockRejectedValueOnce(new Error('設定を読み込めません。'));
+  const { speaker, error } = createSpeaker();
+  speaker.start('確認します。', createSession().settings);
+  await settle();
+  expect(fetch).not.toHaveBeenCalled();
+  expect(error).toHaveBeenCalledWith('設定を読み込めません。');
 });

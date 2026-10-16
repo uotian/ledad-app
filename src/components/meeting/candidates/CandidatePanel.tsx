@@ -8,6 +8,7 @@ import CandidateCard from './CandidateCard';
 import AskComposer from './AskComposer';
 import PromptChips from '../chat/PromptChips';
 import { useState } from 'react';
+import type { Utterance } from '@/lib/session/schema';
 import { formatTranscriptTime } from '@/lib/session/transcript-display';
 export default function CandidatePanel({
   store,
@@ -20,8 +21,16 @@ export default function CandidatePanel({
   const [request, setRequest] = useState<{ text: string; createdAt: string } | null>(null);
   const session = store.session!;
   const g = meeting.generation;
+  const utterances = new Map<string, Utterance>();
+  for (const record of session.utterances) {
+    if (record.candidateId) utterances.set(record.candidateId, record);
+  }
   const candidates = session.candidates.filter(
-    (c) => c.id === meeting.speechCandidateId || (!g.generating && c.status === 'ready'),
+    (c) =>
+      utterances.has(c.id) ||
+      c.status === 'spoken' ||
+      c.id === meeting.speechCandidateId ||
+      (!g.generating && c.status === 'ready'),
   );
   const question = session.transcripts.find((t) => matchesTranscript(t, g.targetId));
   const prompts = meeting.analyze.suggestions?.suggestedMeetingQuestions ?? [];
@@ -68,6 +77,7 @@ export default function CandidatePanel({
                 key={c.id}
                 index={i}
                 candidate={c}
+                utterance={utterances.get(c.id)}
                 language={session.settings.language}
                 playback={c.id === meeting.speechCandidateId ? meeting.speaking : 'idle'}
                 disabled={

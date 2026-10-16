@@ -157,6 +157,7 @@ select:focus {
 .sidebar .brand-mark {
   width: 24px;
   height: 24px;
+  color: var(--muted);
 }
 .sidebar .brand > span:last-child {
   display: none;
@@ -203,8 +204,8 @@ select:focus {
   background: var(--line-strong);
 }
 .sidebar .nav-item svg {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
 }
 .app-main {

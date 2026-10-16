@@ -22,28 +22,45 @@ dataDir/
 ├─ usage-details/                 会議に属さないAPI詳細の保存先
 ├─ logs/                          診断ログ
 ├─ meeting-settings.json          新規会議向けの既定設定
-└─ state.json                     Live・Fixedの設定
+└─ state.json                     利用モード・Live・Fixedの設定
 ```
 
 JSONは権限を制限した一時ファイルから、ファイル単位で置き換えます。複数ファイルの一括更新には対応しません。APIキーはKeychainへ保存します。
 
 ## アプリ設定
 
-Live・Fixedの設定はBackend自身が参照するため、localStorageではなく`state.json`で管理します。
+利用モードとモード別のLive・Fixed設定、およびv0.8.0で追加した接続先を`state.json`で管理します。
 
 ```json
 {
-  "liveProvider": "gemini",
-  "refinementProvider": "openai"
+  "baseUrl": "",
+  "aiMode": "openai",
+  "modes": {
+    "openai": { "liveProvider": "openai", "refinementProvider": "openai" },
+    "gemini": { "liveProvider": "gemini", "refinementProvider": "openai" }
+  }
 }
 ```
 
-- `liveProvider`：`gemini` / `apple`。既定は`gemini`。
-- `refinementProvider`：`openai` / `gemini`。既定は`openai`。
-- モデル名はBackendの設定で決まり、ここには選択したプロバイダーを保存します。
-- 一方の設定を変更しても、もう一方は保持します。
-- `state.json`がなければ、旧`live.json`・`refinement.json`から選択を取り込みます。旧ファイルは残し、移行後は参照しません。
-- 保存内容が不正な場合はエラーとし、既定値で上書きしません。
+- `baseUrl`：カスタムOpenAI接続先。空欄は公式接続。旧データで欠けている場合は空欄として読みます。`PUT /api/connection-settings`の`baseUrl`で更新し、通常のモード別設定は保持します。URLの検証・実効値の制限は[AI接続先](../05-ai/02-connection.md)を参照してください。
+- `aiMode`：`openai`（OpenAIのみ） / `gemini`（Geminiも使う）。新規環境は`openai`。
+- `PUT /api/ai-settings`の`mode`で利用モードだけを変更します。`PUT /api/live-settings`と`PUT /api/config`は現在のモードのLive・Fixedだけを変更します。
+- OpenAIのみのLiveはOpenAI / Apple、FixedはOpenAIのみです。Geminiの選択はBackendでも拒否します。
+- 旧`state.json`のLive・FixedはGemini併用モードとしてそのまま引き継ぎ、OpenAIのみの設定を既定値で追加します。`state.json`がない場合は旧`live.json`・`refinement.json`も読み継ぎます。旧ファイルは削除しません。
+- 保存内容が不正な場合はエラーとし、既定値で上書きしません。ファイル単位の原子的な保存を維持します。
+
+音声出力は選択した声から決めます。localStorageの`ledad.voices`にモード別の声とプロバイダー別の前回の声を保存します。
+
+```json
+{
+  "modes": { "openai": "cedar", "gemini": "Aoede" },
+  "voices": { "openai": "cedar", "gemini": "Aoede" }
+}
+```
+
+未保存のモードはOpenAIのみでMarin、Gemini併用でKoreです。旧`ledad.voice`がある場合はGemini併用に読み継ぎ、OpenAIの声ならOpenAIのみでも引き継ぎます。旧キーは残します。OpenAIのみでGeminiの声は利用できません。破損した新形式は保存・読み上げ時にエラーとし、暗黙に初期化しません。
+
+会議保存値の声は履歴として保持しますが、新しい発言の読み上げには現在のモード別設定を使います。発言開始時に一度取得し、途中・再開で変更しません。モード別の選択肢と反映タイミングは[AI設定](../02-frontend/01-layout/01.01-setting.md)を参照してください。
 
 ## 更新の流れ
 

@@ -547,12 +547,25 @@
   border-top: 1px solid var(--line);
   background: var(--surface-overlay);
   backdrop-filter: blur(10px);
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 18px;
   padding: 17px 27px;
 }
+.session-language-direction {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  text-align: center;
+}
+.session-controls > .audio-state {
+  min-width: 0;
+}
+.session-controls > .listening-controls {
+  justify-self: end;
+}
+
 .audio-state {
   --audio-state-color: var(--danger);
   display: flex;
@@ -807,4 +820,13 @@ fieldset.meeting-left {
 .meeting-grid[data-layout='chat'] > .assistant-panel,
 .meeting-grid[data-layout='analyze'] > .meeting-left {
   display: none;
+}
+
+.candidate-status {
+  color: var(--muted);
+  font-size: calc(10px * var(--text-scale, 1));
+  margin: 0;
+}
+.candidate-speak.button {
+  flex-shrink: 0;
 }

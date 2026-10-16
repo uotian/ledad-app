@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 from ..storage.files import now_iso
-from .models import Pricing
+from .models import Pricing, Rate
 
 
 def create_pricing_snapshot(now=None):
@@ -36,11 +36,29 @@ def estimate_usd(record, pricing):
         ),
         None,
     )
+    # Fill only the missing TTS rate at its introduction price; never replace saved rates.
+    if rate is None and record["provider"] == "openai" and record["operation"] == "speech" and re.fullmatch(
+        r"gpt-4o-mini-tts(?:-\d{4}-\d{2}-\d{2})?", record["model"]
+    ):
+        rate = Rate(
+            provider="openai", model="gpt-4o-mini-tts",
+            input_usd_per_million=0.6, cached_input_usd_per_million=0.6,
+            output_usd_per_million=12, source="https://developers.openai.com/api/docs/pricing",
+        )
+    if rate is None and record["provider"] == "openai" and record["operation"] == "live_transcription" and re.fullmatch(
+        r"gpt-live-transcribe(?:-\d{4}-\d{2}-\d{2})?", record["model"]
+    ):
+        rate = Rate(
+            provider="openai", model="gpt-live-transcribe", input_usd_per_million=0,
+            cached_input_usd_per_million=0, output_usd_per_million=0,
+            audio_input_usd_per_minute=0.017,
+            source="https://developers.openai.com/api/docs/pricing#transcription-and-speech",
+        )
     if rate is None:
         return None
     if rate.audio_input_usd_per_minute is not None:
         seconds = record.get("audioInputSeconds")
-        if seconds is None or record.get("status") != "completed":
+        if seconds is None or (record["operation"] != "live_transcription" and record.get("status") != "completed"):
             return None
         return seconds / 60 * rate.audio_input_usd_per_minute
     if record["operation"] == "live_transcription":

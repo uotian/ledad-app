@@ -128,7 +128,7 @@ export class LiveTranscription {
           usageId: string;
         }>('/api/live-token', {
           method: 'POST',
-          body: JSON.stringify({ sessionId: this.sessionId }),
+          body: JSON.stringify({ sessionId: this.sessionId, provider: 'gemini' }),
           signal: tokenAbort.signal,
         }),
         connectTimeoutMs,

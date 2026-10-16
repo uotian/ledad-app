@@ -26,7 +26,7 @@ Next.jsが画面とリアルタイムの音声送信を、Pythonが会議デー�
 ## 必要なもの
 
 - Apple Silicon搭載のMac、macOS 26以降
-- OpenAI APIキー・Gemini APIキー
+- OpenAI APIキー（Geminiは任意）
 - [LibreOffice](https://www.libreoffice.org/download/download-libreoffice/)（PowerPointの変換に使用）
 
 ## セットアップ
@@ -76,7 +76,9 @@ npm run app:build
 
 ### APIキーの登録
 
-アプリの「設定」でOpenAIとGeminiのAPIキーを登録してください。
+「設定」→「AI」でOpenAI APIキーを登録してください。Geminiを併用する場合は「Geminiも使う」をオンにし、Gemini APIキーも登録します。
+
+OpenAI互換の接続先（`base_url`）を指定すると、文章・音声処理をその接続先へ送れます。指定中はLiveの聞き取りがApple固定になり、Geminiは使いません。接続先には既存のモデル名とAPI形式への対応が必要です。[接続先の要件](docs/design/05-ai/02-connection.md)を参照してください。
 
 ### 音声取得の許可
 

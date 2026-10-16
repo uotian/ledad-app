@@ -29,12 +29,12 @@
   grid-template-columns: 1fr 1fr;
   gap: 19px;
 }
-@media (min-width: 651px) {
+.audio-settings-grid > .field {
+  min-width: 0;
+}
+@media (min-width: 1101px) {
   .audio-settings-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-  .audio-settings-grid > .field {
-    grid-column: span 2;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 .audio-input-field > label {

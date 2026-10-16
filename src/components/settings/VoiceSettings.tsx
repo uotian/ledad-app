@@ -1,60 +1,86 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { useState } from 'react';
 import type { Settings } from '@/lib/session/schema';
 import { useI18n } from './LanguageProvider';
-import { readVoice, saveVoice } from './voice';
+import { readVoice, saveVoice, rememberedVoice, voiceProvider, type AIMode } from './voice';
 import ErrorBanner from '@/components/ui/ErrorBanner';
 
-export default function VoiceSettings() {
+export default function VoiceSettings({
+  models,
+  mode,
+  disabled,
+}: {
+  models?: { openai: string; gemini: string };
+  mode: AIMode;
+  disabled: boolean;
+}) {
   const { t } = useI18n();
-  const [voice, setVoice] = useState<Settings['voice'] | null>(null);
-  const [error, setError] = useState('');
-  useEffect(() => {
-    let active = true;
-    async function load() {
+  const [{ voice, error }, setState] = useState<{ voice: Settings['voice'] | null; error: string }>(
+    () => {
       try {
-        // 未設定なら、これまで選んでいた会議の声を初期値として表示します。
-        const value = readVoice() ?? (await api<Settings>('/api/meeting-settings')).voice;
-        if (active) setVoice(value);
-      } catch (e) {
-        if (active) setError(e instanceof Error ? e.message : String(e));
+        return { voice: readVoice(mode), error: '' };
+      } catch {
+        return { voice: null, error: '声の設定を読み込めません。' };
       }
-    }
-    void load();
-    return () => {
-      active = false;
-    };
-  }, []);
+    },
+  );
   function change(value: Settings['voice']) {
     try {
-      saveVoice(value);
-      setVoice(value);
-      setError('');
+      saveVoice(value, mode);
+      setState({ voice: value, error: '' });
     } catch {
-      setError(t('声の設定を保存できませんでした。'));
+      setState((previous) => ({ ...previous, error: '声の設定を保存できませんでした。' }));
     }
   }
+  const provider = voice ? voiceProvider(voice) : mode;
   return (
-    <section>
-      <label className="field">
-        {t('声の種類')}
+    <>
+      <dt id="speech-provider-label">{t('音声出力')}</dt>
+      <dd>
+        {mode === 'openai' ? (
+          <span>{models?.openai || t('確認中')}</span>
+        ) : (
+          <select
+            aria-labelledby="speech-provider-label"
+            value={provider}
+            disabled={disabled || !voice || !models}
+            onChange={(e) => {
+              try {
+                change(rememberedVoice(e.target.value as AIMode));
+              } catch {
+                setState((previous) => ({ ...previous, error: '声の設定を読み込めません。' }));
+              }
+            }}
+          >
+            <option value="openai">{models?.openai || t('確認中')}</option>
+            <option value="gemini">{models?.gemini || t('確認中')}</option>
+          </select>
+        )}
+      </dd>
+      <dt id="speech-voice-label">{t('声の種類')}</dt>
+      <dd>
         <select
           value={voice ?? 'Kore'}
-          disabled={!voice}
-          aria-describedby="voice-help"
+          disabled={disabled || !voice}
+          aria-labelledby="speech-voice-label"
           onChange={(e) => change(e.target.value as Settings['voice'])}
         >
-          <option value="Kore">{t('Kore · 落ち着いた声')}</option>
-          <option value="Aoede">{t('Aoede · 柔らかな声')}</option>
-          <option value="Puck">{t('Puck · 明るい声')}</option>
-          <option value="Charon">{t('Charon · 明瞭な声')}</option>
+          {provider === 'openai' ? (
+            <>
+              <option value="marin">Marin</option>
+              <option value="cedar">Cedar</option>
+            </>
+          ) : (
+            <>
+              <option value="Kore">{t('Kore · 落ち着いた声')}</option>
+              <option value="Aoede">{t('Aoede · 柔らかな声')}</option>
+              <option value="Puck">{t('Puck · 明るい声')}</option>
+              <option value="Charon">{t('Charon · 明瞭な声')}</option>
+            </>
+          )}
         </select>
-      </label>
-      <p id="voice-help" className="field-help">
-        {t('次の読み上げから反映します。')}
-      </p>
-      <ErrorBanner message={error} />
-    </section>
+        <ErrorBanner message={t(error)} />
+      </dd>
+    </>
   );
 }

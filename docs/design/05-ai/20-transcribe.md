@@ -6,17 +6,17 @@ Liveで途中・確定テキストを表示し、録音区間ごとのFixで再�
 
 | 段階      | ページ                                                  | 入力・結果                |
 | --------- | ------------------------------------------------------- | ------------------------- |
-| Live認識  | [Gemini](21-live-gemini.md) / [Apple](22-live-apple.md) | 音声から途中・確定原文    |
+| Live認識  | [OpenAI](27-live-openai.md) / [Gemini](21-live-gemini.md) / [Apple](22-live-apple.md) | 音声から途中・確定原文    |
 | Fix再認識 | [OpenAI](23-fix-openai.md) / [Gemini](24-fix-gemini.md) | 録音から置換用の原文      |
 | Live翻訳  | [Live Translate](25-live-translate.md)                  | 途中原文の全文から暫定訳  |
 | 確定翻訳  | [Transcript Translate](26-transcript-translate.md)      | 確定原文・Fix原文から訳文 |
 
 ## 共通入力と設定
 
-- 音声：16kHz・モノラル・16bit PCM。FixへはWAVで送ります。
+- 音声：16kHz・モノラル・16bit PCM。OpenAI Liveへの送信時だけ24kHzへ変換し、Fixへは16kHzのWAVで送ります。
 - 言語：[会議設定](../02-frontend/02-home/02-meeting-setting.md#基本設定)の「会議の言語」「翻訳先の言語」。
 - 用語：[Document](10-document.md)の`glossary`。資料本文・要約・プロフィールは認識／翻訳へ送りません。Apple Liveは用語集を使いません。
-- プロバイダー：[アプリ設定](../02-frontend/01-layout/01.01-setting.md#api設定)の「Live文字起こしのモデル」「Fixed文字起こしのモデル」。既定はLiveがGemini、FixがOpenAIです。
+- プロバイダー：[アプリ設定](../02-frontend/01-layout/01.01-setting.md)の「Live文字起こしのモデル」「Fixed文字起こしのモデル」。Liveの既定はOpenAIのみのモードでOpenAI、Gemini併用でGeminiです。FixはどちらもOpenAIが既定です。
 - 区切り：Liveは連続音声15秒で確定を促します。Fixは[会議設定](../02-frontend/02-home/02-meeting-setting.md#詳細設定)の「Fixed文字起こしの間隔」（既定30秒）です。
 
 ## Fixの共通制御
@@ -30,3 +30,5 @@ Liveで途中・確定テキストを表示し、録音区間ごとのFixで再�
 - 再試行しないもの：入力・アプリ検証エラー、明確な課金・日次上限など。試行ごとに利用記録を残します。
 
 実装：[Refinement](../../../backend/ledad/ai/refinement.py)、[再試行](../../../backend/ledad/ai/retry.py)、[要求検証](../../../backend/ledad/service.py)、[録音バッファ](../../../src/lib/audio/review-buffer.ts)、[音声取得の設計](../04-native/02-audio.md)。
+
+カスタム接続先使用中の割り当てと制約は[AI接続先](02-connection.md)を参照してください。

@@ -26,7 +26,7 @@ Next.js handles the interface and real-time audio streaming, while Python manage
 ## Requirements
 
 - Apple Silicon Mac running macOS 26 or later
-- OpenAI and Gemini API keys
+- An OpenAI API key (Gemini is optional)
 - [LibreOffice](https://www.libreoffice.org/download/download-libreoffice/) for PowerPoint conversion
 
 ## Setup
@@ -76,7 +76,9 @@ This creates `build/ledad.app`. Open it in Finder.
 
 ### Register API keys
 
-Add your OpenAI and Gemini API keys in the app’s Settings.
+Add your OpenAI API key in Settings → AI. To use Gemini too, enable the Gemini checkbox and add its key.
+
+A custom OpenAI-compatible `base_url` can route text and audio processing to your gateway. While set, Live transcription uses Apple and Gemini is disabled. The gateway must support the existing models and API formats; see [connection requirements](docs/design/05-ai/02-connection.md).
 
 ### Allow audio access
 

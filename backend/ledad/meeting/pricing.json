@@ -1,11 +1,28 @@
 {
-  "version": "2026-10-08-openai-transcription",
+  "version": "2026-10-16-openai-live",
   "capturedAt": "2026-10-08T00:00:00.000Z",
   "checkedOn": "2026-10-05",
   "usdToJpy": 157.58,
   "exchangeRateDate": "2026-10-02",
   "exchangeRateSource": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx261002.pdf",
   "rates": [
+    {
+      "provider": "openai",
+      "model": "gpt-live-transcribe",
+      "inputUsdPerMillion": 0,
+      "cachedInputUsdPerMillion": 0,
+      "outputUsdPerMillion": 0,
+      "audioInputUsdPerMinute": 0.017,
+      "source": "https://developers.openai.com/api/docs/pricing#transcription-and-speech"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-mini-tts",
+      "inputUsdPerMillion": 0.6,
+      "cachedInputUsdPerMillion": 0.6,
+      "outputUsdPerMillion": 12,
+      "source": "https://developers.openai.com/api/docs/pricing"
+    },
     {
       "provider": "openai",
       "model": "gpt-transcribe",

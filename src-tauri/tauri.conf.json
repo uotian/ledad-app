@@ -11,7 +11,7 @@
   },
   "app": {
     "windows": [{ "label": "main", "title": "ledad", "width": 1440, "height": 960, "minWidth": 980, "minHeight": 700, "visible": false, "titleBarStyle": "Transparent", "theme": "Dark", "backgroundColor": "#1c1917", "backgroundThrottling": "disabled", "dragDropEnabled": false }],
-    "security": { "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:; font-src 'self'; object-src 'none'" }
+    "security": { "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com wss://api.openai.com; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:; font-src 'self'; object-src 'none'" }
   },
   "bundle": {
     "active": true,

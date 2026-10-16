@@ -26,7 +26,7 @@ Next.js gère l’interface et la transmission audio en temps réel, tandis que 
 ## Prérequis
 
 - Mac avec puce Apple Silicon, sous macOS 26 ou ultérieur
-- Clés API OpenAI et Gemini
+- Clé API OpenAI (Gemini est facultatif)
 - [LibreOffice](https://www.libreoffice.org/download/download-libreoffice/) pour la conversion des fichiers PowerPoint
 
 ## Installation
@@ -76,7 +76,9 @@ L’application `build/ledad.app` est créée. Ouvrez-la dans le Finder.
 
 ### Enregistrer les clés API
 
-Ajoutez vos clés API OpenAI et Gemini dans les Réglages de l’application.
+Ajoutez votre clé API OpenAI dans Réglages → IA. Pour utiliser également Gemini, cochez l’option Gemini et ajoutez sa clé.
+
+Une `base_url` personnalisée compatible avec OpenAI permet de traiter le texte et l’audio via ce point de connexion. Dans ce cas, la transcription Live utilise Apple et Gemini est désactivé. Le serveur doit prendre en charge les modèles et formats API existants ; voir les [conditions de connexion](docs/design/05-ai/02-connection.md).
 
 ### Autoriser l’accès audio
 

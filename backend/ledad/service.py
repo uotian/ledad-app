@@ -162,6 +162,16 @@ class Service:
             return Response(self.sessions.default_settings())
         if path == "/api/config" and verb == "GET":
             return Response(self.config.public())
+        if path == "/api/connection-settings" and verb == "PUT":
+            settings = body(request, contracts.ConnectionSettings)
+            if self.ai.provider._active:
+                raise AppError("AI処理が完了してから接続先を変更してください。", 409)
+            self.config.save_base_url(settings.base_url)
+            return Response(self.config.public())
+        if path == "/api/ai-settings" and verb == "PUT":
+            settings = body(request, contracts.AIModeSettings)
+            self.config.save_mode(settings.mode)
+            return Response(self.config.public())
         if path == "/api/config" and verb == "PUT":
             settings = body(request, contracts.RefinementSettings)
             self.config.save_refinement_provider(settings.provider)
@@ -205,13 +215,19 @@ class Service:
                 return Response({"saved": True})
         if path == "/api/live-token" and verb == "POST":
             data = body(request, contracts.LiveToken)
+            if self.config.base_url():
+                raise AppError("カスタム接続先の使用中はLiveにAppleを使用してください。")
             session = self.sessions.read(data.session_id)
             # 登録名への認識バイアスを避け、プロフィールは言及検出だけに使います。
-            return Response(await self.gemini.live_token(session, vocabulary_for(session)))
+            provider = self.ai.provider if (data.provider or self.config.live_provider()) == "openai" else self.gemini
+            return Response(await provider.live_token(session, vocabulary_for(session)))
         if path == "/api/speech" and verb == "POST":
             data = body(request, contracts.Speech)
             self.sessions.read(data.session_id)
-            audio, mime = await self.gemini.speech(
+            if self.config.base_url() and data.voice not in ("marin", "cedar"):
+                raise AppError("カスタム接続先の使用中はGeminiを利用できません。")
+            provider = self.ai.provider if data.voice in ("marin", "cedar") else self.gemini
+            audio, mime = await provider.speech(
                 data.session_id, data.text, data.language, data.voice
             )
             return Response(audio, content_type=mime)

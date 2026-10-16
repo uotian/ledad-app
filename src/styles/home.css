@@ -11,11 +11,8 @@
   margin-right: auto;
   white-space: nowrap;
 }
-.recent-sessions > .empty-state {
-  border: 1px dashed var(--line);
-  border-radius: 14px;
-  background: var(--surface-tint);
-  padding: 25px 20px;
+.session-empty {
+  color: var(--muted);
 }
 .session-list {
   display: grid;
@@ -88,16 +85,11 @@
 .home-preparation .audio-settings {
   margin-top: 22px;
 }
-.audio-details {
-  margin-top: 20px;
-}
-.audio-details summary,
 .home-documents summary {
   cursor: pointer;
   color: var(--muted);
   font-size: calc(12px * var(--text-scale, 1));
 }
-.audio-details[open] summary,
 .home-documents[open] summary {
   margin-bottom: 18px;
 }

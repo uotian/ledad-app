@@ -121,7 +121,7 @@ export default function UsageDialog({
                   setOperation('');
                 }}
               >
-                {id === 'openai' ? 'OpenAI' : 'Gemini'}(
+                {id === 'openai' ? 'OpenAI' : 'Gemini'} (
                 {summary(
                   '',
                   records?.filter((record) => record.provider === id),
@@ -143,7 +143,7 @@ export default function UsageDialog({
               aria-pressed={operation === id}
               onClick={() => setOperation(id)}
             >
-              {t(label)}({summary(id)})
+              {t(label)} ({summary(id)})
             </Button>
           ))}
         </div>

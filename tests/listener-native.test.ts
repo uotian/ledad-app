@@ -400,7 +400,7 @@ it.each([
     liveEvents.onmessage({
       voiceActivity: { type: 'ACTIVITY_END', audioOffset: `${interval}s` },
     } as unknown as LiveServerMessage);
-    expect(onReviewProgress).toHaveBeenLastCalledWith({ state: 'context', remainingSeconds: 5 });
+    expect(onReviewProgress).toHaveBeenLastCalledWith({ state: 'context', elapsedSeconds: 1 });
     vi.setSystemTime(epoch + (interval + 5) * 1000);
     send(Buffer.alloc(5 * 32000).toString('base64'), 0.2);
     expect(onReviewProgress).toHaveBeenLastCalledWith({ state: 'processing' });
@@ -708,4 +708,56 @@ it('合成音声は終了時の残りをGeminiへ送ってから接続を閉じ�
     }),
   );
   expect(stop).toHaveBeenCalledOnce();
+});
+
+it('OpenAI LiveはNativeの末尾と確定結果を受け取ってからFixedを作る', async () => {
+  vi.useFakeTimers();
+  const sockets: { onopen?: () => void; onmessage?: (event: { data: string }) => void }[] = [];
+  vi.stubGlobal('WebSocket', class {
+    onopen?: () => void;
+    onmessage?: (event: { data: string }) => void;
+    bufferedAmount = 0;
+    constructor() { sockets.push(this); }
+    send() {}
+    close() {}
+  });
+  vi.mocked(api).mockResolvedValueOnce({ liveProvider: 'openai' });
+  let sendAudio!: (data: string, level: number) => void;
+  vi.spyOn(NativeCapture.prototype, 'start').mockImplementation(async (_input, onAudio) => {
+    sendAudio = onAudio;
+    onAudio(Buffer.alloc(3200, 7).toString('base64'), .2);
+  });
+  vi.spyOn(NativeCapture.prototype, 'finish').mockImplementation(async () => {
+    sendAudio(Buffer.alloc(3200, 7).toString('base64'), .2);
+  });
+  const nativeStop = vi.spyOn(NativeCapture.prototype, 'stop').mockImplementation(() => {});
+  const onText = vi.fn(() => 'openai-utterance');
+  const onReview = vi.fn(async () => {});
+  const listener = new MeetingListener({ onText, onReview, onInterim: vi.fn(),
+    onStatus: vi.fn(), onError: vi.fn(), onLevel: vi.fn() });
+  const session = createSession();
+  try {
+    const starting = listener.start(session.settings, session.id);
+    await vi.advanceTimersByTimeAsync(0);
+    const socket = sockets[0];
+    const event = (value: object) => socket.onmessage?.({ data: JSON.stringify(value) });
+    socket.onopen?.();
+    event({ type: 'session.updated' });
+    await starting;
+    const stopping = listener.stop();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(nativeStop).not.toHaveBeenCalled();
+    event({ type: 'input_audio_buffer.committed', item_id: 'tail' });
+    event({ type: 'conversation.item.input_audio_transcription.completed', item_id: 'tail', transcript: 'Saved tail' });
+    await stopping;
+    expect(onText).toHaveBeenCalledWith('Saved tail', expect.any(String), true);
+    expect(onReview).toHaveBeenCalledOnce();
+    const review = onReview.mock.calls[0] as unknown as [AudioReview];
+    expect(review[0].pcm.length).toBe(6400);
+    expect(review[0].transcriptIds).toEqual(['openai-utterance']);
+    expect(nativeStop).toHaveBeenCalledOnce();
+  } finally {
+    await listener.stop(false);
+    vi.unstubAllGlobals();
+  }
 });

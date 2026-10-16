@@ -193,6 +193,7 @@ def gemini_mock(service, monkeypatch, handler):
 )
 @pytest.mark.parametrize("vad_ms", [50, 100, 200, 300, 500])
 async def test_gemini_auth_token_wire_constraints(service, monkeypatch, language, code, vad_ms):
+    service.config.save_mode("gemini")
     requests = []
 
     def handle(request):
@@ -306,6 +307,7 @@ async def test_gemini_no_hidden_sdk_retries(service, monkeypatch):
 
 
 async def test_gemini_refine_translates_recording_not_live_fragments(service, monkeypatch, document, reference):
+    service.config.save_mode("gemini")
     service.config.save_refinement_provider("gemini")
     requests = []
 
@@ -369,6 +371,7 @@ async def test_speech_timeout_is_failed_but_user_cancellation_is_cancelled(
 async def test_refinement_translation_retry_does_not_retranscribe_or_return_partial(
     service, monkeypatch, succeeds
 ):
+    service.config.save_mode("gemini")
     service.config.save_refinement_provider("gemini")
     calls = 0
     private_text = "PRIVATE_RECORDING_123"
@@ -551,3 +554,166 @@ async def test_document_preparation_media_model_output_and_usage(service, monkey
     if name.endswith(('.png', '.pdf')):
         assert 'data:' not in json.dumps(detail['request'])
         assert 'binary' in json.dumps(detail['request'])
+
+
+@pytest.mark.parametrize("status", [200, 429])
+async def test_openai_speech_sdk_audio_and_usage(service, monkeypatch, status):
+    calls = []
+    pcm = b"\0\0" * 24000
+    audio = wav_bytes(pcm, sample_rate=24000)
+
+    def handle(request):
+        calls.append(json.loads(request.content))
+        if status != 200:
+            return httpx.Response(status, json={"error": {"message": "rate limited"}})
+        events = [
+            {"type": "speech.audio.delta", "audio": base64.b64encode(pcm[:123]).decode()},
+            {"type": "speech.audio.delta", "audio": base64.b64encode(pcm[123:]).decode()},
+            {"type": "speech.audio.done", "usage": {
+                "input_tokens": 50, "output_tokens": 25, "total_tokens": 75,
+            }},
+        ]
+        return httpx.Response(200, content=speech_events(events), headers={
+            "content-type": "text/event-stream", "x-request-id": "speech-test",
+        })
+
+    service.config.openai_key = "test"
+    monkeypatch.setattr(
+        "ledad.ai.openai.AsyncOpenAI",
+        lambda **kwargs: AsyncOpenAI(
+            **kwargs, http_client=httpx.AsyncClient(transport=httpx.MockTransport(handle))
+        ),
+    )
+    session = service.sessions.create()
+    if status == 200:
+        result = await service.ai.provider.speech(session.id, "こんにちは。", "ja", "marin")
+        assert result == (audio, "audio/wav")
+    else:
+        with pytest.raises(Exception, match="rate limited"):
+            await service.ai.provider.speech(session.id, "こんにちは。", "ja", "marin")
+    assert calls[0]["model"] == "gpt-4o-mini-tts"
+    assert calls[0]["voice"] == "marin"
+    assert calls[0]["response_format"] == "pcm"
+    assert calls[0]["stream_format"] == "sse"
+    assert calls[0]["input"] == "こんにちは。"
+    record = service.usage.list()[0]
+    assert record["provider"] == "openai"
+    assert record["operation"] == "speech"
+    assert record["status"] == ("completed" if status == 200 else "failed")
+    assert record["inputCharacters"] == 6
+    if status == 200:
+        assert record["inputTokens"] == 50
+        assert record["outputTokens"] == 25
+        assert record["totalTokens"] == 75
+        assert record["audioOutputSeconds"] == 1
+        assert record["providerRequestId"] == "speech-test"
+
+
+async def test_openai_speech_requires_key_and_records_failure(service):
+    with pytest.raises(AppError, match="OpenAI APIキー"):
+        await service.ai.provider.speech(service.sessions.create().id, "Hello", "en", "cedar")
+    assert service.usage.list()[0]["status"] == "failed"
+
+
+def speech_events(events):
+    return "".join(f"event: {event['type']}\ndata: {json.dumps(event)}\n\n" for event in events).encode()
+
+
+@pytest.mark.parametrize("events", [
+    [],
+    [{"type": "speech.audio.delta", "audio": "AAAA"}],
+    [{"type": "speech.audio.done", "usage": {"input_tokens": 1}}],
+    [{"type": "speech.audio.done", "usage": {
+        "input_tokens": 1, "output_tokens": -1, "total_tokens": 0,
+    }}],
+    [{"type": "speech.audio.done", "usage": {
+        "input_tokens": 1, "output_tokens": 2, "total_tokens": 3,
+    }}],
+])
+async def test_openai_speech_rejects_incomplete_stream(service, monkeypatch, events):
+    service.config.openai_key = "test"
+    monkeypatch.setattr(
+        "ledad.ai.openai.AsyncOpenAI",
+        lambda **kwargs: AsyncOpenAI(**kwargs, http_client=httpx.AsyncClient(
+            transport=httpx.MockTransport(lambda request: httpx.Response(
+                200, content=speech_events(events), headers={"content-type": "text/event-stream"}
+            ))
+        )),
+    )
+    with pytest.raises(AppError):
+        await service.ai.provider.speech(service.sessions.create().id, "Hello", "en", "cedar")
+    assert service.usage.list()[0]["status"] == "failed"
+
+
+async def test_openai_live_token_constraints_and_secret_redaction(service, monkeypatch):
+    requests = []
+
+    def handle(request):
+        assert request.url.path == '/v1/realtime/client_secrets'
+        requests.append(json.loads(request.content))
+        return httpx.Response(200, json={'value': 'ephemeral-secret', 'expires_at': 123})
+
+    monkeypatch.setattr('ledad.ai.openai.AsyncOpenAI', lambda **kwargs: AsyncOpenAI(
+        **kwargs, http_client=httpx.AsyncClient(transport=httpx.MockTransport(handle))
+    ))
+    service.config.openai_key = 'test-key'
+    session = service.sessions.create()
+    token = await service.ai.provider.live_token(session, ['Ledad', 'bad\nword', '<bad>'])
+    assert token['token'] == 'ephemeral-secret'
+    settings = requests[0]['session']['audio']['input']
+    assert settings['format'] == {'type': 'audio/pcm', 'rate': 24000}
+    assert settings['turn_detection'] is None
+    assert settings['transcription'] == {
+        'model': 'gpt-live-transcribe', 'languages': [session.settings.language],
+        'delay': 'low', 'keywords': ['Ledad'],
+    }
+    assert requests[0]['expires_after']['seconds'] == 60
+    usage = service.usage.read(token['usageId'])
+    assert usage.provider == 'openai'
+    assert usage.operation == 'live_transcription'
+    assert 'ephemeral-secret' not in ''.join(
+        path.read_text() for path in service.config.data_dir.rglob('*.json')
+    )
+
+
+@pytest.mark.parametrize('status', [503, 307])
+async def test_custom_endpoint_routes_all_openai_requests_without_fallback(service, monkeypatch, status):
+    seen = []
+    def handle(request):
+        seen.append(request)
+        return httpx.Response(status, headers={'location': 'https://api.openai.com/v1/responses'}, json={'error': {'message': 'unavailable'}})
+    monkeypatch.setattr('ledad.ai.openai.DefaultAsyncHttpxClient', lambda **kwargs: httpx.AsyncClient(transport=httpx.MockTransport(handle), **kwargs))
+    service.config.openai_key = 'gateway-key'
+    service.config.save_base_url('https://gateway.example/company/v1')
+    provider = service.ai.provider
+    session = service.sessions.create()
+    for name in ['document_preparation', 'meeting_consultation', 'meeting_analyze']:
+        with pytest.raises(Exception):
+            await provider.structured(Consultation, name, 'test', {}, session.id)
+    async with service.usage.measured('openai', 'file_transcription', service.config.openai_stt_model, session.id) as record:
+        with pytest.raises(Exception):
+            await provider.transcribe(bytes(32000), 'ja', [], record)
+    with pytest.raises(Exception):
+        await provider.speech(session.id, 'Hello', 'en', 'marin')
+    assert [r.url.path for r in seen] == ['/company/v1/responses'] * 3 + ['/company/v1/audio/transcriptions', '/company/v1/audio/speech']
+    assert all(r.url.host == 'gateway.example' for r in seen)
+    assert all(r.headers['authorization'] == 'Bearer gateway-key' for r in seen)
+    assert [json.loads(r.content)['model'] for r in seen[:3]] == ['gpt-6-luna', 'gpt-6.1-sol', 'gpt-6-luna']
+
+
+async def test_endpoint_rotation_replaces_client_and_default_ignores_environment(service, monkeypatch):
+    monkeypatch.setenv('OPENAI_BASE_URL', 'https://unselected.example/v1')
+    service.config.openai_key = 'test'
+    provider = service.ai.provider
+    async with provider.client() as original:
+        assert str(original.base_url) == 'https://api.openai.com/v1/'
+        service.config.save_base_url('https://gateway.example/v1')
+        async with provider.client() as custom:
+            assert str(custom.base_url) == 'https://gateway.example/v1/'
+            assert not original.is_closed()
+    assert original.is_closed()
+    service.config.save_base_url('')
+    async with provider.client() as restored:
+        assert str(restored.base_url) == 'https://api.openai.com/v1/'
+        assert restored is not original
+    assert custom.is_closed()
