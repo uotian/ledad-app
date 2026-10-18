@@ -36,3 +36,5 @@ macOS 26以降のNativeでSpeechTranscriberを使います。外部LLMへのプ�
 | `finalizedThrough` | この時点まで訂正されないことを示す位置（秒）。保持中の途中結果も、その末尾がこの位置以前なら確定する |
 
 実装：[AppleTranscriber](../../../native/AudioCapture.swift)、[Native capture](../../../src/lib/audio/native-capture.ts)。
+
+途中表示の一部だけが確定した場合は、その部分も同じLive内に保持します。待機中に届く後続範囲は保留し、表示済みの範囲に未確定部分がなくなった時（停止時を含む）に、まとめて一つの発言として記録します。最終結果の時刻範囲が途中結果より短くなった場合も、置き換えられた表示を同じ発言として扱います。これにより、一部の確定で全文の途中訳が消えることを防ぎます。表示済み・処理中の途中訳の引き継ぎ条件は[Live Translate](25-live-translate.md)を参照してください。

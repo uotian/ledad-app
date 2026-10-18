@@ -3,19 +3,16 @@ import { useRef } from 'react';
 import { BookOpenText, X } from 'lucide-react';
 import { useDialogDismiss } from '@/hooks/useDialogDismiss';
 import { useI18n } from '@/components/settings/LanguageProvider';
-import { useProfile } from '@/components/settings/profile/useProfile';
 import { glossaryEntries } from '@/lib/session/glossary';
 import type { Session } from '@/lib/session/schema';
 import styles from './glossary.module.css';
 
 export default function Glossary({ session }: { session: Session }) {
   const { t } = useI18n();
-  const profile = useProfile();
   const dismiss = useDialogDismiss();
   const dialog = useRef<HTMLDialogElement>(null);
-  const entries = glossaryEntries(session, profile);
+  const entries = glossaryEntries(session);
   const sources = {
-    profile: t('あなたの名前・呼ばれ方'),
     document: t('ドキュメント'),
     analyze: t('会話分析'),
   };

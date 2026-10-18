@@ -1,4 +1,3 @@
-import { readProfile } from '@/components/settings/profile/profile';
 import {
   GoogleGenAI,
   type LiveConnectConfig,
@@ -128,7 +127,6 @@ export class LiveTranscription {
           method: 'POST',
           body: JSON.stringify({
             sessionId: this.sessionId,
-            profile: readProfile(),
             provider: 'gemini',
           }),
           signal: tokenAbort.signal,

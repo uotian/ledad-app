@@ -20,7 +20,7 @@ from .errors import AI_OPERATIONS, AppError, ai_error_message, is_timeout, statu
 from .meeting.commands import SessionCommand, apply_command
 from .meeting.documents import MIME_TYPES, extract_document
 from .meeting.models import ID_PATTERN, MeetingDocumentReference, Session
-from .meeting.policy import reference_is_current, vocabulary_for
+from .meeting.policy import glossary_for, reference_is_current
 from .meeting.pricing import create_pricing_snapshot, estimate_usd, meeting_cost
 from .storage.diagnostics import Diagnostics
 from .storage.files import compact, now_iso
@@ -219,7 +219,7 @@ class Service:
                 raise AppError("カスタム接続先の使用中はLiveにAppleを使用してください。")
             session = self.sessions.read(data.session_id)
             provider = self.ai.provider if (data.provider or self.config.live_provider()) == "openai" else self.gemini
-            return Response(await provider.live_token(session, vocabulary_for(session, data.profile.terms())))
+            return Response(await provider.live_token(session, glossary_for(session)))
         if path == "/api/speech" and verb == "POST":
             data = body(request, contracts.Speech)
             self.sessions.read(data.session_id)
@@ -510,7 +510,7 @@ class Service:
                 raise AppError("会話の更新状態を確認してください。")
             return Response(
                 await self.refinement.run(
-                    session, pcm, transcripts, data.translation_language, vocabulary_for(session, data.profile.terms())
+                    session, pcm, transcripts, data.translation_language, glossary_for(session)
                 )
             )
         raise AppError("操作が見つかりません。", 404)

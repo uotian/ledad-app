@@ -78,7 +78,7 @@ test('AnalyzeでTopicsとYouを一括更新し、失敗は再試行して古いL
               profileKey,
               language: body.language,
               documents: '',
-              reservedTerms: body.profile.name.split(/[\s,、]+/u).filter(Boolean),
+              reservedTerms: [],
             }),
           )
           .digest('hex'),

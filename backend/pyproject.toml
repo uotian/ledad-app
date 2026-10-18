@@ -1,6 +1,6 @@
 [project]
 name = "ledad-service"
-version = "0.9.0"
+version = "0.9.1"
 description = "ledad local meeting and AI service"
 requires-python = ">=3.12,<3.14"
 dependencies = [

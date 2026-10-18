@@ -20,7 +20,7 @@ Next.jsが画面とリアルタイムの音声送信を、Pythonが会議デー�
 - 会議の文脈を踏まえたAIへの相談（Chat）と発言案の作成（Ask）
 - 確認した発言案の読み上げ・停止・再開
 - PDF・PowerPoint・画像・テキスト資料からの参照文・用語集の生成
-- 出典付きの用語集と、登録名・資料・会話分析から最大100語を使う音声認識のヒント（Apple Liveを除く）
+- 出典付きの用語集と、資料・会話分析から最大100語を使う音声認識のヒント（Apple Liveを除く）
 - 会議の記録・要約の保存と、議事録のMarkdown出力
 - 日本語・英語・中国語（簡体字）・フランス語の画面表示と発話
 - カフェモカを基調としたライト・ダーク・システム連動の外観切り替え
@@ -35,7 +35,7 @@ Next.jsが画面とリアルタイムの音声送信を、Pythonが会議デー�
 
 ### アプリのインストール
 
-1. [Releases](https://github.com/uotian/ledad-app/releases/latest)からApple Silicon用の`.dmg`ファイルをダウンロードします。
+1. [Apple Silicon用 v0.9.1](https://github.com/uotian/ledad-app/releases/download/v0.9.1/ledad_0.9.1_aarch64.dmg)をダウンロードします（[SHA-256](https://github.com/uotian/ledad-app/releases/download/v0.9.1/ledad_0.9.1_aarch64.dmg.sha256)）。最新版は[Releases](https://github.com/uotian/ledad-app/releases/latest)をご確認ください。
 2. DMGを開き、`ledad.app`を「アプリケーション」フォルダへドラッグします。
 3. 「アプリケーション」フォルダから`ledad.app`を開きます。
 

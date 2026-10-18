@@ -48,7 +48,7 @@ export function useAnalyze(store: SessionStore, language: Language) {
   const documentsKey = JSON.stringify(documentsFor(store.session));
   const reservedKey = JSON.stringify(
     store.session
-      ? glossaryEntries(store.session, profile)
+      ? glossaryEntries(store.session)
           .filter((entry) => entry.source !== 'analyze')
           .map((entry) => entry.term)
       : [],

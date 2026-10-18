@@ -60,7 +60,7 @@ test('ヘッダーの用語数と優先出典を表示し、狭い画面・終�
   await request.put(`${service}/api/sessions/${session.id}`, { data: session });
   // 資料の追加保存は派生結果を無効化するため、同じ原本の生成済み結果を別途保存します。
   await request.put(`${service}/api/sessions/${session.id}`, { data: session });
-  await context.route('http://127.0.0.1:4319/**', (route) =>
+  await context.route('http://127.0.0.1:4319/api/**', (route) =>
     route.request().url().endsWith('/analyze')
       ? route.fulfill({ json: session.analyze })
       : route.continue({ url: route.request().url().replace(':4319', ':4320') }),
@@ -72,7 +72,7 @@ test('ヘッダーの用語数と優先出典を表示し、狭い画面・終�
   try {
     await page.goto(`/session/?id=${session.id}`);
     const glossary = page.getByRole('button', { name: '用語集', exact: true });
-    await expect(glossary).toHaveText('4語');
+    await expect(glossary).toHaveText('3語');
     const buttons = page.locator('.meeting-header > button');
     await expect(buttons.nth(0)).toHaveAccessibleName('用語集');
     await expect(buttons.nth(1)).toHaveAccessibleName('資料');
@@ -89,9 +89,10 @@ test('ヘッダーの用語数と優先出典を表示し、狭い画面・終�
       await page.setViewportSize({ width, height: 960 });
       await glossary.click();
       const dialog = page.getByRole('dialog', { name: '用語集', exact: true });
-      await expect(dialog.getByRole('row')).toHaveCount(5);
+      await expect(dialog.getByRole('row')).toHaveCount(4);
+      await expect(dialog).not.toContainText('田中');
       await expect(dialog.getByRole('row').filter({ hasText: 'Ledad' })).toHaveText(
-        'Ledadあなたの名前・呼ばれ方',
+        'Ledadドキュメント',
       );
       await expect(dialog.getByRole('row').filter({ hasText: 'Sakana AI' })).toHaveText(
         'Sakana AIドキュメント',

@@ -121,16 +121,16 @@ it('遅れた終了・確定通知が次の区切りを遅らせない', async (
   expect(sockets[0].sendRealtimeInput).toHaveBeenLastCalledWith({ audioStreamEnd: true });
 });
 
-it('3分ごとの接続更新で、その時点の名前設定を取り直す', async () => {
+it('初回・3分ごとの接続更新で名前設定をSTTへ送らない', async () => {
   let name = '内藤芳彦';
   vi.stubGlobal('localStorage', { getItem: () => JSON.stringify({ name, aliases: '' }) });
   await connection.start(30);
-  expect(JSON.parse(tokens()[0][1].body).profile.name).toBe('内藤芳彦');
+  expect(JSON.parse(tokens()[0][1].body)).not.toHaveProperty('profile');
   name = '内藤さん';
   await vi.advanceTimersByTimeAsync(3 * minute + 1500);
   expect(tokens()).toHaveLength(2);
   expect(JSON.parse(tokens()[1][1].body)).toEqual({
-    sessionId: 'meeting-id', profile: { name: '内藤さん', aliases: '' }, provider: 'gemini',
+    sessionId: 'meeting-id', provider: 'gemini',
   });
 });
 

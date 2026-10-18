@@ -17,9 +17,9 @@ def documents_for(session: Session):
     return session.document_reference.summary if reference_is_available(session) else ""
 
 
-def glossary_entries(session: Session, names=()):
+def glossary_entries(session: Session):
     entries, seen = [], set()
-    sources = [("profile", names)]
+    sources = []
     if reference_is_available(session):
         sources.append(("document", session.document_reference.glossary))
     conversation = {
@@ -47,10 +47,6 @@ def glossary_entries(session: Session, names=()):
 
 def glossary_for(session: Session):
     return [entry["term"] for entry in glossary_entries(session)]
-
-
-def vocabulary_for(session: Session, names=()):
-    return [entry["term"] for entry in glossary_entries(session, names)]
 
 
 def meeting_evidence(session: Session):

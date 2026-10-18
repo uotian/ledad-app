@@ -20,7 +20,7 @@ Next.js 负责界面和实时音频传输，Python 负责会议数据管理和 A
 - 根据会议上下文向 AI 咨询（Chat）并生成发言稿（Ask）
 - 朗读确认后的发言稿，支持暂停和继续
 - 从 PDF、PowerPoint、图片和文本资料生成参考文与术语表
-- 查看术语来源，并将已登记姓名、文档和对话分析中的最多100个术语用作语音识别提示（Apple Live 除外）
+- 查看术语来源，并将文档和对话分析中的最多100个术语用作语音识别提示（Apple Live 除外）
 - 保存会议记录和摘要，并导出 Markdown 会议纪要
 - 支持日语、英语、简体中文和法语界面及语音
 - 以咖啡摩卡色为基调，支持浅色、深色及跟随系统的外观模式
@@ -35,7 +35,7 @@ Next.js 负责界面和实时音频传输，Python 负责会议数据管理和 A
 
 ### 安装应用
 
-1. 从 [Releases](https://github.com/uotian/ledad-app/releases/latest) 下载 Apple Silicon 版 `.dmg` 文件。
+1. 下载 [Apple Silicon 版 v0.9.1](https://github.com/uotian/ledad-app/releases/download/v0.9.1/ledad_0.9.1_aarch64.dmg)（[SHA-256](https://github.com/uotian/ledad-app/releases/download/v0.9.1/ledad_0.9.1_aarch64.dmg.sha256)）。最新版本请查看 [Releases](https://github.com/uotian/ledad-app/releases/latest)。
 2. 打开 DMG，将 `ledad.app` 拖入“应用程序”文件夹。
 3. 从“应用程序”文件夹打开 `ledad.app`。
 

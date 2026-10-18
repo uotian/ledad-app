@@ -146,7 +146,7 @@ test('途中訳は発言をまたいで混ざらず、表示言語を変えて�
     await expect(previewTime).toHaveAttribute('datetime', startedAt!);
     await page.getByRole('button', { name: 'Add remark', exact: true }).click();
     await expect.poll(() => finals.length).toBe(1);
-    await expect(page.locator('.transcript-item .transcript-translation')).toHaveCount(0);
+    await expect(page.locator('.transcript-item .transcript-translation')).toHaveText('Next week');
     await expect(page.locator('.transcript-item')).toHaveAttribute(
       'data-transcript-id',
       utteranceId!,
@@ -446,6 +446,81 @@ for (const outcome of ['empty', 'failure'] as const) {
       expect(
         (await (await request.get(`${base}/${session.id}`)).json()).transcripts[0].translation,
       ).toBe('');
+    } finally {
+      await page.close();
+      await request.delete(`${base}/${session.id}`);
+    }
+  });
+}
+
+for (const completed of [true, false]) {
+  test(`一部確定でも先頭部分の${completed ? '表示済み' : '処理中'}訳を残し、次のLiveへ混ぜない`, async ({
+    page,
+    context,
+    request,
+  }) => {
+    const base = 'http://127.0.0.1:4320/api/sessions';
+    const session = await (await request.post(base, { data: { mode: 'audience' } })).json();
+    session.status = 'active';
+    session.settings.translationLanguage = 'en';
+    await request.put(`${base}/${session.id}`, { data: session });
+    const previews: Route[] = [],
+      finals: Route[] = [];
+    await context.route('**/api/**', async (route) => {
+      const url = route.request().url();
+      if (url.endsWith('/translate-transcript')) {
+        previews.push(route);
+        return;
+      }
+      if (url.endsWith('/translate')) {
+        finals.push(route);
+        return;
+      }
+      await route.continue({ url: url.replace(':4319', ':4320') });
+    });
+    await page.addInitScript(() => localStorage.setItem('ledad.language', 'en'));
+    try {
+      await page.goto(`/session/?id=${session.id}`);
+      await page.getByRole('button', { name: 'Add conversation manually' }).click();
+      const input = page.getByLabel('Manual conversation entry', { exact: true });
+      const preview = page.getByRole('button', { name: 'Preview transcription', exact: true });
+      await input.fill('来週');
+      await preview.click();
+      await expect.poll(() => previews.length).toBe(1);
+      if (completed) {
+        await previews[0].fulfill({
+          json: { translation: 'Next week', usageId: crypto.randomUUID() },
+        });
+        await expect(page.locator('.interim-transcript')).toContainText('Next week');
+      }
+      await input.fill('来週は金曜日です 続きの発言');
+      await preview.click();
+      await expect(page.locator('.interim-transcript')).toContainText('続きの発言');
+      const firstId = await page.locator('.interim-transcript').getAttribute('data-transcript-id');
+      await input.fill('来週は金曜日です');
+      await page.getByRole('button', { name: 'Add remark', exact: true }).click();
+      await expect.poll(() => finals.length).toBe(1);
+      const first = page.locator(`[data-transcript-id="${firstId}"] .transcript-translation`);
+      if (!completed) {
+        await previews[0].fulfill({
+          json: { translation: 'Next week', usageId: crypto.randomUUID() },
+        });
+      }
+      await expect(first).toHaveText('Next week');
+      await input.fill('続きの発言');
+      await preview.click();
+      await expect(page.locator('.interim-transcript')).toContainText('続きの発言');
+      await expect(first).toHaveText('Next week');
+      await expect(page.locator('.interim-transcript .transcript-translation')).toHaveCount(0);
+      if (completed) {
+        await previews[1].fulfill({
+          json: { translation: 'FULL OLD PREVIEW', usageId: crypto.randomUUID() },
+        });
+        await expect(page.getByText('FULL OLD PREVIEW')).toHaveCount(0);
+        await expect(first).toHaveText('Next week');
+      }
+      await finals[0].fulfill({ json: { translation: 'Next Friday.' } });
+      await expect(first).toHaveText('Next Friday.');
     } finally {
       await page.close();
       await request.delete(`${base}/${session.id}`);

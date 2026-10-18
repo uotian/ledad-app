@@ -148,7 +148,7 @@ class MeetingAI:
                 ],
             }
         reserved_terms = [
-            entry["term"] for entry in glossary_entries(session, body.profile.terms())
+            entry["term"] for entry in glossary_entries(session)
             if entry["source"] != "analyze"
         ]
         reserved = {term.lower() for term in reserved_terms}

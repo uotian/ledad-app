@@ -116,9 +116,7 @@ it('Appleの複数の途中範囲を保ち、確定位置を越えるまでは�
     },
   );
   vi.spyOn(NativeCapture.prototype, 'stop').mockImplementation(() => {});
-  vi.spyOn(NativeCapture.prototype, 'finish').mockImplementation(async () => {
-    transcript({ text: 'Finally.', final: true, start: 2, end: 3, finalizedThrough: 3 });
-  });
+  vi.spyOn(NativeCapture.prototype, 'finish').mockResolvedValue(undefined);
   const onText = vi.fn();
   const onInterim = vi.fn();
   const listener = new MeetingListener({
@@ -130,6 +128,7 @@ it('Appleの複数の途中範囲を保ち、確定位置を越えるまでは�
   });
   const session = createSession();
   await listener.start(session.settings, session.id);
+  onInterim.mockClear();
   transcript({ text: 'Ice cream', final: false, start: 0, end: 1, finalizedThrough: 0 });
   transcript({ text: 'again', final: false, start: 1, end: 2, finalizedThrough: 0 });
   expect(onText).not.toHaveBeenCalled();
@@ -137,14 +136,20 @@ it('Appleの複数の途中範囲を保ち、確定位置を越えるまでは�
   transcript({ text: 'I scream', final: false, start: 0, end: 1, finalizedThrough: 0 });
   expect(onInterim.mock.lastCall?.[0]).toBe('I scream again');
   transcript({ text: 'Final', final: false, start: 2, end: 3, finalizedThrough: 1 });
-  expect(onText.mock.calls.map(([text]) => text)).toEqual(['I scream']);
-  expect(onText.mock.lastCall?.[2]).toBe(false);
+  expect(onText).not.toHaveBeenCalled();
+  expect(onInterim.mock.calls.every(([text]) => text !== '')).toBe(true);
+  expect(onInterim.mock.lastCall?.[0]).toBe('I scream again');
   transcript({ text: 'again.', final: true, start: 1, end: 2, finalizedThrough: 2 });
-  expect(onText.mock.lastCall?.[2]).toBe(false);
-  expect(onInterim.mock.lastCall?.[0]).toBe('Final');
-  await listener.stop();
-  expect(onText.mock.calls.map(([text]) => text)).toEqual(['I scream', 'again.', 'Finally.']);
+  expect(onText.mock.calls.map(([text]) => text)).toEqual(['I scream again.']);
   expect(onText.mock.lastCall?.[2]).toBe(true);
+  expect(onInterim.mock.lastCall?.[0]).toBe('Final');
+  transcript({ text: 'Finally.', final: true, start: 2, end: 3, finalizedThrough: 3 });
+  expect(onText.mock.calls.map(([text]) => text)).toEqual(['I scream again.', 'Finally.']);
+  expect(onText.mock.lastCall?.[2]).toBe(true);
+  transcript({ text: 'Next', final: false, start: 3, end: 4, finalizedThrough: 3 });
+  expect(onInterim.mock.lastCall?.[0]).toBe('Next');
+  await listener.stop();
+  expect(onText.mock.calls.map(([text]) => text)).toEqual(['I scream again.', 'Finally.', 'Next']);
 });
 
 it.each([
@@ -158,14 +163,23 @@ it.each([
     complete: true,
   },
   {
-    name: '途中範囲の一部だけを確定',
+    name: '途中範囲を短い最終結果で置換',
     ranges: [[0, 2]],
     finalRange: [0, 1],
-    complete: false,
+    complete: true,
   },
   {
     name: '次の途中範囲が届いて前の範囲が確定',
     ranges: [[0, 1]],
+    finalRange: null,
+    complete: true,
+  },
+  {
+    name: '複数の途中範囲を確定位置で同時に確定',
+    ranges: [
+      [0, 1],
+      [1, 2],
+    ],
     finalRange: null,
     complete: true,
   },
@@ -177,13 +191,13 @@ it.each([
     stop: true,
   },
   {
-    name: '停止時に複数の途中範囲を個別に確定',
+    name: '停止時に複数の途中範囲をまとめて確定',
     ranges: [
       [0, 1],
       [1, 2],
     ],
     finalRange: null,
-    complete: false,
+    complete: true,
     stop: true,
   },
 ])('Appleで$nameしたとき、直前の訳を引き継げる範囲を判定する', async (sample) => {
@@ -215,13 +229,22 @@ it.each([
       const [start, end] = sample.finalRange;
       transcript({ text: '訂正した原文。', final: true, start, end, finalizedThrough: end });
     } else {
-      transcript({ text: '次の発言', final: false, start: 1, end: 2, finalizedThrough: 1 });
+      const end = Math.max(...sample.ranges.map((range) => range[1]));
+      transcript({
+        text: '次の発言',
+        final: false,
+        start: end,
+        end: end + 1,
+        finalizedThrough: end,
+      });
       expect(onInterim.mock.lastCall?.[0]).toBe('次の発言');
     }
     expect(onText).toHaveBeenCalled();
-    expect(onText.mock.calls.map((call) => call[2])).toEqual(
-      sample.stop ? sample.ranges.map(() => sample.complete) : [sample.complete],
-    );
+    expect(onText.mock.calls.map((call) => call[2])).toEqual([sample.complete]);
+    if (!sample.finalRange)
+      expect(onText.mock.calls[0][0]).toBe(
+        sample.ranges.map(([start]) => `途中${start}`).join(' '),
+      );
   } finally {
     await listener.stop();
   }
@@ -713,28 +736,39 @@ it('合成音声は終了時の残りをGeminiへ送ってから接続を閉じ�
 it('OpenAI LiveはNativeの末尾と確定結果を受け取ってからFixedを作る', async () => {
   vi.useFakeTimers();
   const sockets: { onopen?: () => void; onmessage?: (event: { data: string }) => void }[] = [];
-  vi.stubGlobal('WebSocket', class {
-    onopen?: () => void;
-    onmessage?: (event: { data: string }) => void;
-    bufferedAmount = 0;
-    constructor() { sockets.push(this); }
-    send() {}
-    close() {}
-  });
+  vi.stubGlobal(
+    'WebSocket',
+    class {
+      onopen?: () => void;
+      onmessage?: (event: { data: string }) => void;
+      bufferedAmount = 0;
+      constructor() {
+        sockets.push(this);
+      }
+      send() {}
+      close() {}
+    },
+  );
   vi.mocked(api).mockResolvedValueOnce({ liveProvider: 'openai' });
   let sendAudio!: (data: string, level: number) => void;
   vi.spyOn(NativeCapture.prototype, 'start').mockImplementation(async (_input, onAudio) => {
     sendAudio = onAudio;
-    onAudio(Buffer.alloc(3200, 7).toString('base64'), .2);
+    onAudio(Buffer.alloc(3200, 7).toString('base64'), 0.2);
   });
   vi.spyOn(NativeCapture.prototype, 'finish').mockImplementation(async () => {
-    sendAudio(Buffer.alloc(3200, 7).toString('base64'), .2);
+    sendAudio(Buffer.alloc(3200, 7).toString('base64'), 0.2);
   });
   const nativeStop = vi.spyOn(NativeCapture.prototype, 'stop').mockImplementation(() => {});
   const onText = vi.fn(() => 'openai-utterance');
   const onReview = vi.fn(async () => {});
-  const listener = new MeetingListener({ onText, onReview, onInterim: vi.fn(),
-    onStatus: vi.fn(), onError: vi.fn(), onLevel: vi.fn() });
+  const listener = new MeetingListener({
+    onText,
+    onReview,
+    onInterim: vi.fn(),
+    onStatus: vi.fn(),
+    onError: vi.fn(),
+    onLevel: vi.fn(),
+  });
   const session = createSession();
   try {
     const starting = listener.start(session.settings, session.id);
@@ -748,7 +782,11 @@ it('OpenAI LiveはNativeの末尾と確定結果を受け取ってからFixedを
     await vi.advanceTimersByTimeAsync(0);
     expect(nativeStop).not.toHaveBeenCalled();
     event({ type: 'input_audio_buffer.committed', item_id: 'tail' });
-    event({ type: 'conversation.item.input_audio_transcription.completed', item_id: 'tail', transcript: 'Saved tail' });
+    event({
+      type: 'conversation.item.input_audio_transcription.completed',
+      item_id: 'tail',
+      transcript: 'Saved tail',
+    });
     await stopping;
     expect(onText).toHaveBeenCalledWith('Saved tail', expect.any(String), true);
     expect(onReview).toHaveBeenCalledOnce();

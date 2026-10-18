@@ -1,6 +1,6 @@
 [package]
 name = "ledad"
-version = "0.9.0"
+version = "0.9.1"
 description = "あなたの言葉を、あなたのペースで。"
 authors = ["ledad"]
 edition = "2021"

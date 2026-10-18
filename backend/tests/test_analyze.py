@@ -84,8 +84,8 @@ async def test_analyze_generates_topics_and_mentions_together(service, mentions)
     assert result["mentions"] == mentions
     data = provider.call_args.args[3]
     assert data == {
-        "reservedTerms": ["内藤", "Naito"],
-        "glossaryLimit": 98,
+        "reservedTerms": [],
+        "glossaryLimit": 100,
         "previousGlossary": [],
         "glossaryTargetIds": [],
         "mentionTargetIds": ["c1"],
@@ -104,7 +104,7 @@ async def test_analyze_generates_topics_and_mentions_together(service, mentions)
         "profileKey": compact(body.profile.wire()),
         "language": "en",
         "documents": "",
-        "reservedTerms": ["内藤", "Naito"],
+        "reservedTerms": [],
     }
     assert result["inputKey"] == hashlib.sha256(compact(payload).encode()).hexdigest()
 
@@ -296,7 +296,7 @@ async def test_glossary_selection_reserves_priority_terms_and_does_not_restore_r
     data = service.ai.provider.structured.call_args.args[3]
     assert data['glossaryLimit'] == slots
     assert len(data['reservedTerms']) == 100 - slots
-    assert data['reservedTerms'][0] == 'Owner'
+    assert data['reservedTerms'][0] == 'owner'
     assert data['glossaryTargetIds'] == ['c2']
     assert data['previousGlossary'] == [
         {'term': term, 'evidenceId': 'c1', 'timestamp': conversation[0]['timestamp']}

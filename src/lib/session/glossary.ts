@@ -1,8 +1,7 @@
 import type { Session } from './schema';
-import type { Profile } from '@/components/settings/profile/profile';
 
-export function glossaryEntries(session: Session, profile: Profile) {
-  const entries: { term: string; source: 'profile' | 'document' | 'analyze' }[] = [];
+export function glossaryEntries(session: Session) {
+  const entries: { term: string; source: 'document' | 'analyze' }[] = [];
   const seen = new Set<string>();
   const reference = session.documentReference;
   const documents =
@@ -19,7 +18,6 @@ export function glossaryEntries(session: Session, profile: Profile) {
       .map((item) => [item.id, item.completedText] as const),
   ]);
   const sources = [
-    ['profile', `${profile.name} ${profile.aliases}`.split(/[\s,、]+/u)],
     ['document', documents],
     [
       'analyze',

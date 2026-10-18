@@ -228,10 +228,9 @@ async def test_gemini_auth_token_wire_constraints(service, monkeypatch, language
         == vad_ms
     )
     assert config["inputAudioTranscription"]["languageCodes"] == [code]
-    assert config["inputAudioTranscription"]["customVocabulary"] == ["ポケカメン", "kimono", "コレコレ"]
+    assert "customVocabulary" not in config["inputAudioTranscription"]
     assert requests[0]["bidiGenerateContentSetup"]["inputAudioTranscription"] == {
         "language_codes": [code],
-        "custom_vocabulary": ["ポケカメン", "kimono", "コレコレ"],
     }
     assert "test" not in json.dumps(service.config.public())
     assert service.usage.read(result["usageId"]).status == "running"

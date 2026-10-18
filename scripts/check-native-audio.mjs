@@ -341,8 +341,8 @@ if CommandLine.arguments.contains("--apple-overflow") {
     .map(JSON.parse);
   assert.equal(
     recovery.filter((event) => event.type === 'warning').length,
-    1,
-    'Late-audio warnings must be throttled',
+    0,
+    'Late audio must be discarded without a warning',
   );
   assert.deepEqual(recovery.at(-1), { type: 'checked', recovery: true });
   for (const argument of ['--mix-too-late', '--mix-too-far']) {
@@ -353,7 +353,7 @@ if CommandLine.arguments.contains("--apple-overflow") {
     );
   }
   console.log(
-    'Mixed audio: late/partial buffers, warning throttling, timer catch-up and fatal bounds pass.',
+    'Mixed audio: late/partial buffers, silent discard, timer catch-up and fatal bounds pass.',
   );
   for (const [argument, message] of [
     ['--apple-overflow', 'Appleの文字起こしが音声に追いつけませんでした。'],

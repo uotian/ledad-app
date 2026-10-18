@@ -202,7 +202,6 @@ final class PcmMixer {
   private var cursor = 0
   private var end = 0
   private var stopped = false
-  private var lastWarningTime = -Double.infinity
 
   init(output: PcmOutput) {
     self.output = output
@@ -230,15 +229,8 @@ final class PcmMixer {
       let required = start + count - samples.count
       publish(through: (required + 1599) / 1600 * 1600)
     }
-    if start < cursor {
-      let now = CMTimeGetSeconds(CMClockGetTime(CMClockGetHostTimeClock()))
-      if now - lastWarningTime >= 5 {
-        emit(["type": "warning", "message": "音声の一部が遅れて届いたため、その部分を記録できませんでした。聞き取りは継続しています。"])
-        lastWarningTime = now
-      }
-      // 出力済みの時刻には戻せないため、未出力の部分だけを残します。
-      if start + count <= cursor { return }
-    }
+    // 出力済みの時刻には戻せないため、遅れた部分は通知せず除外します。
+    if start + count <= cursor { return }
     let input = buffer.int16ChannelData![0]
     for i in max(0, cursor - start)..<count {
       samples[(start + i) % samples.count] += Int32(input[i])

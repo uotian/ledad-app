@@ -1,4 +1,3 @@
-import { readProfile } from '@/components/settings/profile/profile';
 import { api } from '@/lib/api';
 import { encodeBase64 } from '@/lib/base64';
 import { LiveUsage } from './live-usage';
@@ -99,7 +98,6 @@ export class OpenAILiveTranscription {
           signal: this.abort.signal,
           body: JSON.stringify({
             sessionId: this.sessionId,
-            profile: readProfile(),
             provider: 'openai',
           }),
         },

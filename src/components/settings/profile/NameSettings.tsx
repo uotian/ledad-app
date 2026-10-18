@@ -35,7 +35,7 @@ export default function NameSettings() {
       </label>
       <p id="profile-help" className="field-help">
         {t(
-          '名前や呼ばれ方をスペース区切りで入力してください。言及の検出に使います。設定はこの端末に保存され、会話分析や音声認識のときにAIへ送られます。',
+          '名前や呼ばれ方をスペース区切りで入力してください。言及の検出に使います。設定はこの端末に保存され、会話分析のときにAIへ送られます。',
         )}
       </p>
       {error && <p role="alert">{t('名前を保存できませんでした。')}</p>}

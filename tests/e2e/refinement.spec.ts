@@ -64,7 +64,7 @@ test('録音の再認識は本文と訳文を同時更新し、時刻・参照�
       rows.map((t: { id: string }) => t.id),
     );
     await expect.poll(() => !!review).toBe(true);
-    expect(review!.request().postDataJSON().profile).toEqual({ name: '認識用サンプル', aliases: '' });
+    expect(review!.request().postDataJSON()).not.toHaveProperty('profile');
     expect(review!.request().postDataJSON().transcriptIds).toEqual(
       rows.map((t: { id: string }) => t.id),
     );

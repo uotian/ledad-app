@@ -39,7 +39,8 @@ export function useInterimTranslation(
       return {
         text:
           result?.key === expectedKey &&
-          (completeUtterance || result.sourceText === sourceText.trim())
+          (completeUtterance ||
+            (!!result.sourceText && sourceText.trim().startsWith(result.sourceText)))
             ? result.text
             : '',
         pending,

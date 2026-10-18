@@ -2,6 +2,15 @@
 
 [English](CHANGELOG.md) | [日本語](CHANGELOG.ja.md)
 
+## v0.9.1 — 2026-10-19
+
+- Fixed translation handoff during partial Apple Live finalization to preserve displayed translations.
+- Removed registered names and aliases from speech-recognition hints while retaining them for You mention detection. Conversation analysis now considers transcription variations using context and preserves original quotations.
+- Silently discard late portions of mixed PC and microphone audio while continuing capture. Errors that prevent capture from continuing remain visible.
+- Added data-handling information and official references to every README language.
+
+Resolution with physical audio and mention-detection accuracy with real APIs remain unverified. The app uses Apple Development signing and is not notarized; macOS may block downloaded copies from opening.
+
 ## v0.9.0 — 2026-10-17
 
 - Added a header glossary with a term count and a single source for each term: your registered names, documents, or conversation analysis, in that priority order.

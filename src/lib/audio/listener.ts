@@ -32,6 +32,7 @@ export class MeetingListener {
   private native?: NativeCapture;
   private appleEpoch?: number;
   private applePending: AppleTranscript[] = [];
+  private applePreviewEnd?: number;
   private nativeNeedsFinish = false;
   private finishing?: Promise<void>;
   private appleLimitTimer?: ReturnType<typeof setTimeout>;
@@ -305,9 +306,9 @@ export class MeetingListener {
   }
   private flushInterim() {
     if (this.applePending.length) {
-      const completeUtterance = this.applePending.length === 1;
-      this.applePending.forEach((result) => this.commitApple(result, completeUtterance));
+      this.commitAppleResults(this.applePending);
       this.applePending = [];
+      this.applePreviewEnd = undefined;
       return;
     }
     if (!this.interim.trim()) return;
@@ -320,37 +321,68 @@ export class MeetingListener {
   private appleTimestamp(start: number) {
     return new Date((this.appleEpoch ?? Date.now()) + start * 1000).toISOString();
   }
-  private commitApple(result: AppleTranscript, completeUtterance: boolean) {
+  private commitAppleResults(results: AppleTranscript[]) {
+    if (!results.length) return;
+    this.commitApple({
+      ...results[0],
+      end: Math.max(...results.map((result) => result.end)),
+      text: results
+        .map((result) => result.text.trim())
+        .filter(Boolean)
+        .join(' '),
+    });
+  }
+  private commitApple(result: AppleTranscript) {
     const text = result.text.trim();
     this.interim = '';
     this.callbacks.onInterim('');
     if (!text) return;
     const timestamp = this.appleTimestamp(result.start);
-    const id = this.callbacks.onText(text, timestamp, completeUtterance);
+    const id = this.callbacks.onText(text, timestamp, true);
     this.review?.record(id || null, timestamp);
     this.review?.boundary(`${result.end}s`);
     this.publishReviewProgress();
   }
   private receiveAppleTranscript(result: AppleTranscript) {
     if (result.start < 0 || result.end < result.start || result.finalizedThrough < 0) return;
-    const previewRanges = this.applePending;
+    const previewRanges = this.applePending.filter(
+      (pending) => this.applePreviewEnd === undefined || pending.start < this.applePreviewEnd,
+    );
     // 新しい途中結果だけでは、前の範囲が確定したとは限りません。
     this.applePending = this.applePending.filter(
       (pending) => pending.end <= result.start || pending.start >= result.end,
     );
     this.applePending.push(result);
     this.applePending.sort((a, b) => a.start - b.start);
-    const finalized = this.applePending.filter(
-      (pending) => pending.final || pending.end <= result.finalizedThrough,
+    for (const pending of this.applePending)
+      pending.final ||= pending.end <= result.finalizedThrough;
+    if (this.applePreviewEnd !== undefined)
+      this.applePreviewEnd = Math.max(
+        this.applePreviewEnd,
+        ...this.applePending
+          .filter((pending) => pending.start < this.applePreviewEnd!)
+          .map((pending) => pending.end),
+      );
+    const displayed = this.applePending.filter(
+      (pending) => this.applePreviewEnd === undefined || pending.start < this.applePreviewEnd,
     );
-    this.applePending = this.applePending.filter((pending) => !finalized.includes(pending));
-    finalized.forEach((pending) =>
-      this.commitApple(
-        pending,
-        previewRanges.every((range) => range.start >= pending.start && range.end <= pending.end),
-      ),
+    const finalized = displayed.filter((pending) => pending.final);
+    const remaining = displayed.filter((pending) => !pending.final);
+    // 全文訳を分断しないよう、表示済みの範囲に未確定部分が残る間は同じLiveを保つ。
+    const previewStillPending = remaining.some((pending) =>
+      previewRanges.some((range) => pending.start < range.end && pending.end > range.start),
     );
+    if (finalized.length && previewStillPending) {
+      this.applePreviewEnd ??= Math.max(...previewRanges.map((range) => range.end));
+    } else if (!previewStillPending) {
+      this.applePending = this.applePending.filter((pending) => !finalized.includes(pending));
+      this.applePreviewEnd = undefined;
+      this.commitAppleResults(finalized);
+    }
     this.interim = this.applePending
+      .filter(
+        (pending) => this.applePreviewEnd === undefined || pending.start < this.applePreviewEnd,
+      )
       .map((pending) => pending.text.trim())
       .filter(Boolean)
       .join(' ');
@@ -429,6 +461,7 @@ export class MeetingListener {
     this.publishReviewProgress();
     this.interim = '';
     this.applePending = [];
+    this.applePreviewEnd = undefined;
     this.nativeNeedsFinish = false;
     this.appleEpoch = undefined;
     clearTimeout(this.appleLimitTimer);

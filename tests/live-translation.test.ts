@@ -160,16 +160,17 @@ it('複数の引き渡し後に応答が逆順で届いても、破棄した訳�
   expect(requests).toHaveLength(4);
   worker.reset();
 });
-it('確定時に原稿が伸びていれば途中までの応答を引き渡さず、待機原稿も送信しない', async () => {
+it('確定原文の先頭部分の訳を暫定表示へ引き渡し、待機原稿は送信しない', async () => {
   const { worker, requests, display, unused } = setup();
   worker.update('来週');
   worker.update('来週は金曜日');
   expect(requests).toHaveLength(1);
-  expect(worker.handoff()).toBeNull();
+  const pending = worker.handoff();
   requests[0].resolve('Next week');
+  await expect(pending).resolves.toEqual({ text: 'Next week', usageId: 'usage-1' });
   await vi.advanceTimersByTimeAsync(0);
   expect(display).not.toHaveBeenCalled();
-  expect(unused.mock.calls).toEqual([['usage-1']]);
+  expect(unused).not.toHaveBeenCalled();
   expect(requests).toHaveLength(1);
 });
 it('Appleの途中表示の一部だけ確定した場合は、全体の訳を引き渡さない', async () => {

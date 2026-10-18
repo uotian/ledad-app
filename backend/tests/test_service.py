@@ -32,7 +32,7 @@ async def create(service, mode="audience"):
 
 
 @pytest.mark.parametrize("legacy_profile", [False, True])
-async def test_profile_names_are_sent_as_transcription_hints(service, legacy_profile):
+async def test_profile_names_are_not_sent_as_transcription_hints(service, legacy_profile):
     service.config.save_mode("gemini")
     data = await create(service)
     extra = {"profile": {"name": "ポケカメン kimono コレコレ", "aliases": ""}} if legacy_profile else {}
@@ -41,7 +41,7 @@ async def test_profile_names_are_sent_as_transcription_hints(service, legacy_pro
         service, "/api/live-token", "POST", {"sessionId": data["id"], **extra}
     )
     assert result.status == 200
-    assert service.gemini.live_token.call_args.args[1] == (["ポケカメン", "kimono", "コレコレ"] if legacy_profile else [])
+    assert service.gemini.live_token.call_args.args[1] == []
 
     data["status"] = "active"
     transcript_id = str(uuid4())
@@ -66,7 +66,7 @@ async def test_profile_names_are_sent_as_transcription_hints(service, legacy_pro
         }
     )
     assert result.status == 200
-    assert service.refinement.run.call_args.args[-1] == (["ポケカメン", "kimono", "コレコレ"] if legacy_profile else [])
+    assert service.refinement.run.call_args.args[-1] == []
     assert result.value["text"] == "頭も良くて"
 
 

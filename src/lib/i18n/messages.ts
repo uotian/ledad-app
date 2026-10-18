@@ -300,11 +300,11 @@ export const messages: Record<string, { en: string; zh: string; fr: string }> = 
   資料の追加: { en: 'Add documents', zh: '添加资料', fr: 'Ajouter des documents' },
   会議を始める: { en: 'Start a meeting', zh: '开始会议', fr: 'Démarrer une réunion' },
   '準備しています…': { en: 'Preparing…', zh: '正在准备…', fr: 'Préparation…' },
-  '名前や呼ばれ方をスペース区切りで入力してください。言及の検出に使います。設定はこの端末に保存され、会話分析や音声認識のときにAIへ送られます。':
+  '名前や呼ばれ方をスペース区切りで入力してください。言及の検出に使います。設定はこの端末に保存され、会話分析のときにAIへ送られます。':
     {
-      en: 'Enter your name and other names you go by, separated by spaces. They help detect mentions. Settings are saved on this device and sent to AI for conversation analysis and speech recognition.',
-      zh: '请输入姓名或称呼，用空格分隔。它们用于检测提及。设置保存在本设备上，并在对话分析和语音识别时发送给 AI。',
-      fr: 'Saisissez votre nom et vos autres appellations, séparés par des espaces, pour détecter les mentions. Ces réglages sont enregistrés sur cet appareil et envoyés à l’IA pour l’analyse de la conversation et la reconnaissance vocale.',
+      en: 'Enter your name and other names you go by, separated by spaces. They help detect mentions. Settings are saved on this device and sent to AI for conversation analysis.',
+      zh: '请输入姓名或称呼，用空格分隔。它们用于检测提及。设置保存在本设备上，并在对话分析时发送给 AI。',
+      fr: 'Saisissez votre nom et vos autres appellations, séparés par des espaces, pour détecter les mentions. Ces réglages sont enregistrés sur cet appareil et envoyés à l’IA pour l’analyse de la conversation.',
     },
   会話分析中: { en: 'Analyzing conversation', zh: '会话分析中', fr: 'Analyse de la conversation' },
   '会話分析待ち（あと約{seconds}秒）': {

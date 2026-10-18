@@ -63,7 +63,10 @@ export class LiveTranslation {
   }
   handoff(sourceText = this.text, completeUtterance = false) {
     // Appleでは途中表示の一部だけが確定することもあるため、確定原文と照合する。
-    const pending = completeUtterance || sourceText.trim() === this.sent ? this.pending : null;
+    const pending =
+      completeUtterance || (!!this.sent && sourceText.trim().startsWith(this.sent))
+        ? this.pending
+        : null;
     if (pending) this.handedOff.add(pending);
     this.reset();
     return pending;

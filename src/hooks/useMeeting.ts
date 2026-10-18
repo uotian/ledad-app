@@ -1,5 +1,4 @@
 'use client';
-import { readProfile } from '@/components/settings/profile/profile';
 import { documentsPending } from '@/lib/session/policy';
 import type { Refinement } from '@/lib/session/refinement';
 import type { AudioReview, ReviewProgress } from '@/lib/audio/review-buffer';
@@ -228,7 +227,6 @@ export function useMeeting(store: SessionStore) {
         method: 'POST',
         body: JSON.stringify({
           pcm: encodeBase64(review.pcm),
-          profile: readProfile(),
           transcriptIds: review.transcriptIds,
           translationLanguage: translationLanguage.current,
         }),
