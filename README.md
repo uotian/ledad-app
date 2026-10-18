@@ -59,11 +59,38 @@ When prompted at the first meeting start, allow microphone and system audio acce
 2. Follow the transcription and translation, consult AI, and create or read speaking drafts aloud.
 3. Use Stop listening and Resume to control capture. Choose End to save and summarize the meeting.
 
+## Data handling
+
+This app runs locally and stores meeting data on your Mac. Apple’s SpeechTranscriber also transcribes on the device without sending recognition audio to Apple’s servers. [Apple documentation](https://developer.apple.com/documentation/speech/asking-permission-to-use-speech-recognition)
+
+### About external AI services
+
+Audio, conversations, documents, and other data needed for processing are sent to the OpenAI API or Gemini API. Data handling at the destination is subject to each service’s terms and settings.
+
+#### Using OpenAI only
+
+- **Training and improvement**: API data is not used to train or improve models by default. Explicitly opting in to data sharing with OpenAI is an exception.
+- **Abuse monitoring retention**: Logs are normally retained for up to 30 days. However, depending on OpenAI’s settings and applicable conditions, it may be possible to disable data retention for abuse monitoring.
+
+#### Also using Gemini
+
+The following also applies to features that use Gemini.
+
+- **Training and improvement**: Paid Services do not use inputs or outputs to train or improve models. Unpaid Services generally use them for training and improvement.
+- **Abuse monitoring retention**: Inputs, additional context, and outputs are retained for 55 days for purposes including abuse monitoring. This retention also applies to Paid Services.
+
+These descriptions are based on official documentation checked on October 18, 2026. Refer to the links below for current terms.
+
+- [OpenAI API: Data controls](https://developers.openai.com/api/docs/guides/your-data)
+- [Gemini API: Terms of service](https://ai.google.dev/gemini-api/terms)
+- [Gemini API: Abuse monitoring](https://ai.google.dev/gemini-api/docs/usage-policies)
+
+If you configure a custom endpoint (`base_url`), its data handling policies apply.
+
 ## Notes
 
 - This app is developed through vibe coding with Codex.
 - OpenAI and Gemini API usage incurs charges. The displayed cost is an estimate.
-- Meeting data is stored on your Mac. Audio, conversations, and documents are sent to external AI APIs as needed for processing.
 - Listening stops automatically after 30 minutes by default (configurable). Choose Resume to continue.
 - Sending generated speech through Zoom or similar apps requires separate audio-sharing setup.
 

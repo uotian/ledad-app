@@ -59,11 +59,38 @@ Next.js 负责界面和实时音频传输，Python 负责会议数据管理和 A
 2. 查看转写和翻译，向 AI 咨询，生成并朗读发言稿。
 3. 使用“停止听取”和“继续”控制听取，点击“结束”保存并总结会议。
 
+## 数据处理
+
+本应用在本地运行，应用保存的会议数据存储在您的 Mac 上。此外，Apple 的 SpeechTranscriber 在设备上进行转写，不会将识别用音频发送到 Apple 服务器。 [Apple 官方资料](https://developer.apple.com/documentation/speech/asking-permission-to-use-speech-recognition)
+
+### 关于外部 AI 服务
+
+处理所需的音频、对话和资料等会发送到 OpenAI API 或 Gemini API。接收方的数据处理遵循各服务的条款和设置。
+
+#### 仅使用 OpenAI
+
+- **训练和改进**：默认不会将 API 数据用于模型训练或改进。用户在 OpenAI 端明确同意共享数据的情况除外。
+- **监控数据保留**：滥用监控日志通常最多保留 30 天。不过，根据 OpenAI 的设置和适用条件，可能可以关闭用于滥用监控的数据保留。
+
+#### 同时使用 Gemini
+
+使用 Gemini 的功能还适用以下说明。
+
+- **训练和改进**：付费服务不会将输入和输出用于模型训练或改进。免费服务原则上会将其用于训练和改进。
+- **监控数据保留**：输入、额外上下文和输出会为滥用监控等目的保留 55 天。付费服务也适用此项保留。
+
+以上说明基于 2026 年 10 月 18 日核查的官方资料。最新条件请参阅下方链接。
+
+- [OpenAI API：数据控制](https://developers.openai.com/api/docs/guides/your-data)
+- [Gemini API：服务条款](https://ai.google.dev/gemini-api/terms)
+- [Gemini API：滥用监控](https://ai.google.dev/gemini-api/docs/usage-policies)
+
+如果设置了自定义接入地址（`base_url`），数据处理遵循该接入地址的规则。
+
 ## 注意事项
 
 - 本应用通过 Codex 进行氛围编程（vibe coding）开发。
 - 使用 OpenAI 和 Gemini API 会产生费用。界面显示的费用为估算值。
-- 会议数据保存在 Mac 本地。音频、对话和资料会根据处理需要发送到外部 AI API。
 - 默认听取 30 分钟后自动停止，可在设置中修改。点击“继续”即可恢复。
 - 如需在 Zoom 等应用中发送朗读音频，需另行配置音频共享。
 
