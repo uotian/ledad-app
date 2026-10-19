@@ -2,6 +2,13 @@
 
 [English](CHANGELOG.md) | [日本語](CHANGELOG.ja.md)
 
+## v0.9.2 — 2026-10-19
+
+- Live translation now sends updated transcription text without waiting for earlier translations, across Apple, Gemini, and OpenAI Live modes.
+- Late responses no longer overwrite newer translations. Translation handoff during partial finalization is preserved.
+
+Translation request volume and API costs may increase. Latency with physical audio and real APIs remains unverified. The app uses Apple Development signing; the DMG is unsigned and not notarized, so macOS may block downloaded copies from opening.
+
 ## v0.9.1 — 2026-10-19
 
 - Fixed translation handoff during partial Apple Live finalization to preserve displayed translations.

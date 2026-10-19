@@ -1,6 +1,6 @@
 import { expect, test, type Route } from '@playwright/test';
 
-test('途中訳を1件ずつ送り、待機中は最新原稿にまとめて前回訳を引き継ぐ', async ({
+test('途中訳を並行送信し、応答順が逆転しても古い訳に戻らない', async ({
   page,
   context,
   request,
@@ -37,43 +37,47 @@ test('途中訳を1件ずつ送り、待機中は最新原稿にまとめて前�
     await previewButton.click();
     await input.fill('来週は金曜日に会議です');
     await previewButton.click();
-    expect(previews).toHaveLength(1);
+    await expect.poll(() => previews.length).toBe(3);
+    expect(previews[2].request().postDataJSON()).toMatchObject({
+      text: '来週は金曜日に会議です',
+      previous: null,
+    });
     await previews[0].fulfill({
       json: { translation: 'Next week', usageId: crypto.randomUUID() },
     });
     await expect(page.locator('.interim-transcript')).toContainText('Next week');
-    await expect.poll(() => previews.length).toBe(2);
-    expect(previews[1].request().postDataJSON()).toMatchObject({
-      text: '来週は金曜日に会議です',
-      previous: { text: '来週', translation: 'Next week' },
-    });
-    await previews[1].fulfill({
+    await previews[2].fulfill({
       json: { translation: 'The meeting is next Friday', usageId: crypto.randomUUID() },
     });
     await expect(page.locator('.interim-transcript .transcript-translation')).toHaveText(
       'The meeting is next Friday',
     );
+    const oldUsageId = crypto.randomUUID();
+    await previews[1].fulfill({ json: { translation: 'Next Friday', usageId: oldUsageId } });
+    await expect.poll(() => unused).toContain(oldUsageId);
+    await expect(page.locator('.interim-transcript .transcript-translation')).toHaveText(
+      'The meeting is next Friday',
+    );
     await input.fill('来週は金曜日に会議です。正午からです');
     await previewButton.click();
-    await expect.poll(() => previews.length).toBe(3);
+    await expect.poll(() => previews.length).toBe(4);
+    expect(previews[3].request().postDataJSON().previous).toEqual({
+      text: '来週は金曜日に会議です',
+      translation: 'The meeting is next Friday',
+    });
     await input.fill('The meeting is next Friday at noon');
     await previewButton.click();
-    expect(previews).toHaveLength(3);
-    await previews[2].fulfill({
-      json: { translation: 'The meeting is next Friday at noon', usageId: crypto.randomUUID() },
-    });
-    await expect.poll(() => previews.length).toBe(4);
-    expect(previews[3].request().postDataJSON()).toMatchObject({
-      text: 'The meeting is next Friday at noon',
-      previous: {
-        text: '来週は金曜日に会議です。正午からです',
-        translation: 'The meeting is next Friday at noon',
-      },
-    });
+    await expect.poll(() => previews.length).toBe(5);
     const emptyUsageId = crypto.randomUUID();
-    await previews[3].fulfill({ json: { translation: '', usageId: emptyUsageId } });
+    await previews[4].fulfill({ json: { translation: '', usageId: emptyUsageId } });
     await expect(page.locator('.interim-transcript .transcript-translation')).toHaveCount(0);
     await expect.poll(() => unused).toContain(emptyUsageId);
+    const lateUsageId = crypto.randomUUID();
+    await previews[3].fulfill({
+      json: { translation: 'The meeting is next Friday at noon', usageId: lateUsageId },
+    });
+    await expect.poll(() => unused).toContain(lateUsageId);
+    await expect(page.locator('.interim-transcript .transcript-translation')).toHaveCount(0);
   } finally {
     await page.close();
     await request.delete(`${base}/${session.id}`);

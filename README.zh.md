@@ -35,7 +35,7 @@ Next.js 负责界面和实时音频传输，Python 负责会议数据管理和 A
 
 ### 安装应用
 
-1. 下载 [Apple Silicon 版 v0.9.1](https://github.com/uotian/ledad-app/releases/download/v0.9.1/ledad_0.9.1_aarch64.dmg)（[SHA-256](https://github.com/uotian/ledad-app/releases/download/v0.9.1/ledad_0.9.1_aarch64.dmg.sha256)）。最新版本请查看 [Releases](https://github.com/uotian/ledad-app/releases/latest)。
+1. 下载 [Apple Silicon 版 v0.9.2](https://github.com/uotian/ledad-app/releases/download/v0.9.2/ledad_0.9.2_aarch64.dmg)（[SHA-256](https://github.com/uotian/ledad-app/releases/download/v0.9.2/ledad_0.9.2_aarch64.dmg.sha256)）。最新版本请查看 [Releases](https://github.com/uotian/ledad-app/releases/latest)。
 2. 打开 DMG，将 `ledad.app` 拖入“应用程序”文件夹。
 3. 从“应用程序”文件夹打开 `ledad.app`。
 

@@ -35,7 +35,7 @@ Next.js gère l’interface et la transmission audio en temps réel, tandis que 
 
 ### Installer l’application
 
-1. Téléchargez [v0.9.1 pour Apple Silicon](https://github.com/uotian/ledad-app/releases/download/v0.9.1/ledad_0.9.1_aarch64.dmg) ([SHA-256](https://github.com/uotian/ledad-app/releases/download/v0.9.1/ledad_0.9.1_aarch64.dmg.sha256)). Consultez [Releases](https://github.com/uotian/ledad-app/releases/latest) pour la dernière version.
+1. Téléchargez [v0.9.2 pour Apple Silicon](https://github.com/uotian/ledad-app/releases/download/v0.9.2/ledad_0.9.2_aarch64.dmg) ([SHA-256](https://github.com/uotian/ledad-app/releases/download/v0.9.2/ledad_0.9.2_aarch64.dmg.sha256)). Consultez [Releases](https://github.com/uotian/ledad-app/releases/latest) pour la dernière version.
 2. Ouvrez le DMG et faites glisser `ledad.app` dans le dossier Applications.
 3. Ouvrez `ledad.app` depuis Applications.
 

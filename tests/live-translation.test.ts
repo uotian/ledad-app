@@ -30,54 +30,43 @@ function setup() {
   );
   return { worker, requests, display, unused };
 }
-it('送信は1件ずつ行い、待機中の原稿は最新にまとめて直前の訳を引き継ぐ', async () => {
+it('前の応答を待たず更新ごとに送り、同じ原文は再送しない', async () => {
   const { worker, requests, display, unused } = setup();
-  worker.update('a');
-  for (const text of ['ab', 'abc', 'abcd', 'abcde']) worker.update(text);
+  for (const text of ['a', 'ab', 'abc', 'abcd', 'abcde']) worker.update(text);
   worker.update(' abcde ');
-  expect(requests).toHaveLength(1);
+  expect(requests).toHaveLength(5);
+  expect(requests.every((request) => request.previous === null)).toBe(true);
   requests[0].resolve('A');
   await vi.advanceTimersByTimeAsync(0);
-  expect(requests).toHaveLength(2);
-  expect(requests[1]).toMatchObject({
-    text: 'abcde',
-    previous: { text: 'a', translation: 'A' },
-  });
-  requests[1].resolve('ABCDE');
+  expect(display).toHaveBeenLastCalledWith('A', 'a');
+  requests[4].resolve('ABCDE');
   await vi.advanceTimersByTimeAsync(0);
-  worker.update('abcde');
-  expect(requests).toHaveLength(2);
+  requests[3].resolve('ABCD');
+  requests[2].resolve('ABC');
+  requests[1].resolve('AB');
+  await vi.advanceTimersByTimeAsync(0);
   expect(display.mock.calls).toEqual([
     ['A', 'a'],
     ['ABCDE', 'abcde'],
   ]);
-  expect(unused).not.toHaveBeenCalled();
-  worker.reset();
+  expect(unused.mock.calls).toEqual([['usage-4'], ['usage-3'], ['usage-2']]);
+  worker.update('abcdef');
+  expect(requests[5].previous).toEqual({ text: 'abcde', translation: 'ABCDE' });
 });
-it('原文が伸び続けても返った訳を表示し、次の原稿へその訳を渡す', async () => {
+it('原文が伸び続けても最新要求の完了を待たずに返った訳を表示する', async () => {
   const { worker, requests, display } = setup();
   worker.update('a');
   worker.update('ab');
   requests[0].resolve('A');
   await vi.advanceTimersByTimeAsync(0);
-  expect(display).toHaveBeenLastCalledWith('A', 'a');
   worker.update('abc');
-  worker.update('abcd');
-  expect(requests).toHaveLength(2);
+  expect(requests[2].previous).toEqual({ text: 'a', translation: 'A' });
   requests[1].resolve('AB');
-  await vi.advanceTimersByTimeAsync(0);
-  expect(requests[2]).toMatchObject({
-    text: 'abcd',
-    previous: { text: 'ab', translation: 'AB' },
-  });
-  requests[2].resolve('ABCD');
   await vi.advanceTimersByTimeAsync(0);
   expect(display.mock.calls).toEqual([
     ['A', 'a'],
     ['AB', 'ab'],
-    ['ABCD', 'abcd'],
   ]);
-  worker.reset();
 });
 it('応答が返れば、表示した原文と訳文を次のリクエストへ渡す', async () => {
   const { worker, requests } = setup();
@@ -95,7 +84,6 @@ it('空の結果で表示を消し、次のリクエストに古い訳を渡さ�
   requests[0].resolve('Next week');
   await vi.advanceTimersByTimeAsync(0);
   worker.update('Next Friday');
-  worker.update('Next Friday at noon');
   requests[1].resolve('');
   await vi.advanceTimersByTimeAsync(0);
   expect(display.mock.calls).toEqual([
@@ -103,6 +91,7 @@ it('空の結果で表示を消し、次のリクエストに古い訳を渡さ�
     ['', 'Next Friday'],
   ]);
   expect(unused.mock.calls).toEqual([['usage-2']]);
+  worker.update('Next Friday at noon');
   expect(requests[2]).toMatchObject({ text: 'Next Friday at noon', previous: null });
   worker.reset();
 });
@@ -160,18 +149,18 @@ it('複数の引き渡し後に応答が逆順で届いても、破棄した訳�
   expect(requests).toHaveLength(4);
   worker.reset();
 });
-it('確定原文の先頭部分の訳を暫定表示へ引き渡し、待機原稿は送信しない', async () => {
+it('並行要求のうち最新の訳を確定発言へ引き渡す', async () => {
   const { worker, requests, display, unused } = setup();
   worker.update('来週');
   worker.update('来週は金曜日');
-  expect(requests).toHaveLength(1);
-  const pending = worker.handoff();
+  expect(requests).toHaveLength(2);
+  const pending = worker.handoff('来週は金曜日です');
   requests[0].resolve('Next week');
-  await expect(pending).resolves.toEqual({ text: 'Next week', usageId: 'usage-1' });
+  requests[1].resolve('Next Friday');
+  await expect(pending).resolves.toEqual({ text: 'Next Friday', usageId: 'usage-2' });
   await vi.advanceTimersByTimeAsync(0);
   expect(display).not.toHaveBeenCalled();
-  expect(unused).not.toHaveBeenCalled();
-  expect(requests).toHaveLength(1);
+  expect(unused.mock.calls).toEqual([['usage-1']]);
 });
 it('Appleの途中表示の一部だけ確定した場合は、全体の訳を引き渡さない', async () => {
   const { worker, requests, display, unused } = setup();
@@ -190,12 +179,17 @@ it('Geminiが発言全体を確定した場合は原文が変わっても処理�
   worker.update('こんにちは皆さん');
   worker.update('こんにちは皆さんお元気ですか');
   const pending = worker.handoff('こんにちは、皆さん。お元気ですか？', true);
-  requests[1].resolve('Hello everyone');
-  await expect(pending).resolves.toEqual({ text: 'Hello everyone', usageId: 'usage-2' });
+  requests[2].resolve('Hello everyone, how are you?');
+  await expect(pending).resolves.toEqual({
+    text: 'Hello everyone, how are you?',
+    usageId: 'usage-3',
+  });
   await vi.advanceTimersByTimeAsync(0);
   expect(display.mock.calls).toEqual([['Hello', 'こんにちは']]);
-  expect(requests).toHaveLength(2);
-  expect(unused).not.toHaveBeenCalled();
+  expect(requests).toHaveLength(3);
+  requests[1].resolve('Hello everyone');
+  await vi.advanceTimersByTimeAsync(0);
+  expect(unused.mock.calls).toEqual([['usage-2']]);
 });
 it('失敗したリクエストで前回訳を置き換えず、次の原稿で回復する', async () => {
   const { worker, requests, display } = setup();
@@ -222,7 +216,7 @@ it('旧リクエストの終了が新しい発言を解除せず、古い訳も�
   worker.update('newer');
   requests[0].resolve('OLD');
   await vi.advanceTimersByTimeAsync(0);
-  expect(requests).toHaveLength(2);
+  expect(requests).toHaveLength(3);
   expect(display).not.toHaveBeenCalled();
   expect(unused).toHaveBeenCalledWith('usage-1');
   requests[1].resolve('NEW');
@@ -230,7 +224,7 @@ it('旧リクエストの終了が新しい発言を解除せず、古い訳も�
   expect(requests).toHaveLength(3);
   expect(requests[2]).toMatchObject({
     text: 'newer',
-    previous: { text: 'new', translation: 'NEW' },
+    previous: null,
   });
   requests[2].resolve('NEWER');
   await vi.advanceTimersByTimeAsync(0);
@@ -251,4 +245,29 @@ it('認識の訂正にも直前の原文を添え、修正された訳を表示�
   await vi.advanceTimersByTimeAsync(0);
   expect(display).toHaveBeenLastCalledWith('The budget is 1,000 yen', '予算は1000円');
   worker.reset();
+});
+
+it('新しい空訳の後に古い訳が届いても表示を戻さない', async () => {
+  const { worker, requests, display, unused } = setup();
+  worker.update('古い原文');
+  worker.update('English');
+  requests[1].resolve('');
+  await vi.advanceTimersByTimeAsync(0);
+  requests[0].resolve('Old text');
+  await vi.advanceTimersByTimeAsync(0);
+  expect(display.mock.calls).toEqual([['', 'English']]);
+  expect(unused.mock.calls).toEqual([['usage-2'], ['usage-1']]);
+});
+
+it('部分確定では確定範囲に収まる最も新しい処理中の訳を引き渡す', async () => {
+  const { worker, requests, display, unused } = setup();
+  worker.update('来週');
+  worker.update('来週は金曜日 続きの発言');
+  const pending = worker.handoff('来週は金曜日');
+  requests[0].resolve('Next week');
+  requests[1].resolve('Full preview');
+  await expect(pending).resolves.toEqual({ text: 'Next week', usageId: 'usage-1' });
+  await vi.advanceTimersByTimeAsync(0);
+  expect(display).not.toHaveBeenCalled();
+  expect(unused.mock.calls).toEqual([['usage-2']]);
 });

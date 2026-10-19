@@ -35,7 +35,7 @@ Next.jsが画面とリアルタイムの音声送信を、Pythonが会議デー�
 
 ### アプリのインストール
 
-1. [Apple Silicon用 v0.9.1](https://github.com/uotian/ledad-app/releases/download/v0.9.1/ledad_0.9.1_aarch64.dmg)をダウンロードします（[SHA-256](https://github.com/uotian/ledad-app/releases/download/v0.9.1/ledad_0.9.1_aarch64.dmg.sha256)）。最新版は[Releases](https://github.com/uotian/ledad-app/releases/latest)をご確認ください。
+1. [Apple Silicon用 v0.9.2](https://github.com/uotian/ledad-app/releases/download/v0.9.2/ledad_0.9.2_aarch64.dmg)をダウンロードします（[SHA-256](https://github.com/uotian/ledad-app/releases/download/v0.9.2/ledad_0.9.2_aarch64.dmg.sha256)）。最新版は[Releases](https://github.com/uotian/ledad-app/releases/latest)をご確認ください。
 2. DMGを開き、`ledad.app`を「アプリケーション」フォルダへドラッグします。
 3. 「アプリケーション」フォルダから`ledad.app`を開きます。
 

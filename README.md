@@ -35,7 +35,7 @@ Next.js handles the interface and real-time audio streaming, while Python manage
 
 ### Install the app
 
-1. Download [v0.9.1 for Apple Silicon](https://github.com/uotian/ledad-app/releases/download/v0.9.1/ledad_0.9.1_aarch64.dmg) ([SHA-256](https://github.com/uotian/ledad-app/releases/download/v0.9.1/ledad_0.9.1_aarch64.dmg.sha256)). See [Releases](https://github.com/uotian/ledad-app/releases/latest) for the latest release.
+1. Download [v0.9.2 for Apple Silicon](https://github.com/uotian/ledad-app/releases/download/v0.9.2/ledad_0.9.2_aarch64.dmg) ([SHA-256](https://github.com/uotian/ledad-app/releases/download/v0.9.2/ledad_0.9.2_aarch64.dmg.sha256)). See [Releases](https://github.com/uotian/ledad-app/releases/latest) for the latest release.
 2. Open the DMG and drag `ledad.app` into the Applications folder.
 3. Open `ledad.app` from Applications.
 
